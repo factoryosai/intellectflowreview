@@ -11,5 +11,9 @@ export async function getMyProfile() {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) return null;
   const { data } = await supabase.from("profiles").select("*").eq("id", u.user.id).maybeSingle();
+  if (data) {
+    // best-effort last-active tracking
+    void supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", u.user.id);
+  }
   return data;
 }
