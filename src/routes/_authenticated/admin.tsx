@@ -45,7 +45,7 @@ function Admin() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [users, biz, reviews, subs, coupons, scans, standees] = await Promise.all([
+      const [users, biz, reviews, subs, coupons, scans, standees, profs] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("businesses").select("*", { count: "exact", head: true }),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
@@ -53,19 +53,31 @@ function Admin() {
         supabase.from("coupons").select("used_count"),
         supabase.from("businesses").select("total_scans"),
         supabase.from("standees").select("status"),
+        supabase.from("profiles").select("plan, plan_price, lifetime_free, subscription_status, trial_ends_at, last_active_at"),
       ]);
       const activeSubs = (subs.data ?? []).filter((s) => s.status === "active" && !s.is_lifetime);
       const mrr = activeSubs.reduce((s, r) => s + (r.price ?? 0), 0);
+      const p = profs.data ?? [];
+      const nowMs = Date.now();
+      const trialing = p.filter((r) => !r.lifetime_free && r.subscription_status === "trialing" && r.trial_ends_at && new Date(r.trial_ends_at).getTime() > nowMs).length;
+      const churned = p.filter((r) => !r.lifetime_free && r.subscription_status === "trialing" && r.trial_ends_at && new Date(r.trial_ends_at).getTime() <= nowMs).length;
+      const lifetime = p.filter((r) => r.lifetime_free).length;
+      const active30 = p.filter((r) => r.last_active_at && nowMs - new Date(r.last_active_at).getTime() <= 30 * 86400000).length;
       return {
         users: users.count ?? 0,
         biz: biz.count ?? 0,
         reviews: reviews.count ?? 0,
         mrr,
         activeSubs: activeSubs.length,
+        trialing,
+        churned,
+        lifetime,
+        active30,
         coupons_used: (coupons.data ?? []).reduce((s, c) => s + (c.used_count ?? 0), 0),
         total_scans: (scans.data ?? []).reduce((s, b) => s + (b.total_scans ?? 0), 0),
         pending_standees: (standees.data ?? []).filter((s) => s.status === "pending" || s.status === "printing").length,
       };
+
     },
   });
 
@@ -127,7 +139,11 @@ function Admin() {
     },
   });
 
-  const updateProfile = async (id: string, patch: { plan?: string; is_founder_free?: boolean; is_admin?: boolean }) => {
+  const updateProfile = async (
+    id: string,
+    patch: { plan?: string; is_founder_free?: boolean; is_admin?: boolean; lifetime_free?: boolean; subscription_status?: string },
+  ) => {
+
     const { error } = await supabase.from("profiles").update(patch).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Updated");
