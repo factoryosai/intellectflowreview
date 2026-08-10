@@ -238,9 +238,15 @@ export type Database = {
           id: string
           is_admin: boolean | null
           is_founder_free: boolean | null
+          last_active_at: string | null
+          lifetime_free: boolean
           phone: string | null
           plan: string | null
           plan_price: number | null
+          razorpay_payment_ref: string | null
+          razorpay_plan_id: string | null
+          subscription_status: string
+          trial_ends_at: string | null
         }
         Insert: {
           business_name?: string | null
@@ -250,9 +256,15 @@ export type Database = {
           id: string
           is_admin?: boolean | null
           is_founder_free?: boolean | null
+          last_active_at?: string | null
+          lifetime_free?: boolean
           phone?: string | null
           plan?: string | null
           plan_price?: number | null
+          razorpay_payment_ref?: string | null
+          razorpay_plan_id?: string | null
+          subscription_status?: string
+          trial_ends_at?: string | null
         }
         Update: {
           business_name?: string | null
@@ -262,9 +274,15 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           is_founder_free?: boolean | null
+          last_active_at?: string | null
+          lifetime_free?: boolean
           phone?: string | null
           plan?: string | null
           plan_price?: number | null
+          razorpay_payment_ref?: string | null
+          razorpay_plan_id?: string | null
+          subscription_status?: string
+          trial_ends_at?: string | null
         }
         Relationships: []
       }
