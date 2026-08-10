@@ -36,7 +36,11 @@ const STANDEE_STATUSES = ["pending", "printing", "shipped", "delivered", "cancel
 function Admin() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
+  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sinceFilter, setSinceFilter] = useState<string>("all");
   const [tab, setTab] = useState<"overview" | "users" | "businesses" | "standees" | "reviews">("overview");
+
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
@@ -66,18 +70,26 @@ function Admin() {
   });
 
   const { data: users } = useQuery({
-    queryKey: ["admin-users", q],
+    queryKey: ["admin-users", q, planFilter, statusFilter, sinceFilter],
     enabled: tab === "users",
     queryFn: async () => {
       let query = supabase
         .from("profiles")
-        .select("id, email, business_name, phone, city, plan, plan_price, is_admin, is_founder_free, created_at")
+        .select("id, email, business_name, phone, city, plan, plan_price, is_admin, is_founder_free, lifetime_free, subscription_status, trial_ends_at, last_active_at, created_at")
         .order("created_at", { ascending: false })
         .limit(200);
       if (q) query = query.or(`email.ilike.%${q}%,business_name.ilike.%${q}%`);
+      if (planFilter !== "all") query = query.eq("plan", planFilter);
+      if (statusFilter === "lifetime") query = query.eq("lifetime_free", true);
+      else if (statusFilter !== "all") query = query.eq("subscription_status", statusFilter);
+      if (sinceFilter !== "all") {
+        const days = Number(sinceFilter);
+        query = query.gte("created_at", new Date(Date.now() - days * 86400000).toISOString());
+      }
       return (await query).data ?? [];
     },
   });
+
 
   const { data: businesses } = useQuery({
     queryKey: ["admin-biz", q],
