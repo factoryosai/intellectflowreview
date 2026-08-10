@@ -2,8 +2,10 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, Gift, QrCode, Star, Package, Copy, ExternalLink } from "lucide-react";
+import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, Gift, QrCode, Star, Package, Copy, ExternalLink, Clock, Crown } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
