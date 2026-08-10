@@ -2,8 +2,10 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, Gift, QrCode, Star, Package, Copy, ExternalLink } from "lucide-react";
+import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, Gift, QrCode, Star, Package, Copy, ExternalLink, Clock, Crown } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -36,12 +38,16 @@ const STANDEE_STATUSES = ["pending", "printing", "shipped", "delivered", "cancel
 function Admin() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
+  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sinceFilter, setSinceFilter] = useState<string>("all");
   const [tab, setTab] = useState<"overview" | "users" | "businesses" | "standees" | "reviews">("overview");
+
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [users, biz, reviews, subs, coupons, scans, standees] = await Promise.all([
+      const [users, biz, reviews, subs, coupons, scans, standees, profs] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("businesses").select("*", { count: "exact", head: true }),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
@@ -49,35 +55,55 @@ function Admin() {
         supabase.from("coupons").select("used_count"),
         supabase.from("businesses").select("total_scans"),
         supabase.from("standees").select("status"),
+        supabase.from("profiles").select("plan, plan_price, lifetime_free, subscription_status, trial_ends_at, last_active_at"),
       ]);
       const activeSubs = (subs.data ?? []).filter((s) => s.status === "active" && !s.is_lifetime);
       const mrr = activeSubs.reduce((s, r) => s + (r.price ?? 0), 0);
+      const p = profs.data ?? [];
+      const nowMs = Date.now();
+      const trialing = p.filter((r) => !r.lifetime_free && r.subscription_status === "trialing" && r.trial_ends_at && new Date(r.trial_ends_at).getTime() > nowMs).length;
+      const churned = p.filter((r) => !r.lifetime_free && r.subscription_status === "trialing" && r.trial_ends_at && new Date(r.trial_ends_at).getTime() <= nowMs).length;
+      const lifetime = p.filter((r) => r.lifetime_free).length;
+      const active30 = p.filter((r) => r.last_active_at && nowMs - new Date(r.last_active_at).getTime() <= 30 * 86400000).length;
       return {
         users: users.count ?? 0,
         biz: biz.count ?? 0,
         reviews: reviews.count ?? 0,
         mrr,
         activeSubs: activeSubs.length,
+        trialing,
+        churned,
+        lifetime,
+        active30,
         coupons_used: (coupons.data ?? []).reduce((s, c) => s + (c.used_count ?? 0), 0),
         total_scans: (scans.data ?? []).reduce((s, b) => s + (b.total_scans ?? 0), 0),
         pending_standees: (standees.data ?? []).filter((s) => s.status === "pending" || s.status === "printing").length,
       };
+
     },
   });
 
   const { data: users } = useQuery({
-    queryKey: ["admin-users", q],
+    queryKey: ["admin-users", q, planFilter, statusFilter, sinceFilter],
     enabled: tab === "users",
     queryFn: async () => {
       let query = supabase
         .from("profiles")
-        .select("id, email, business_name, phone, city, plan, plan_price, is_admin, is_founder_free, created_at")
+        .select("id, email, business_name, phone, city, plan, plan_price, is_admin, is_founder_free, lifetime_free, subscription_status, trial_ends_at, last_active_at, created_at, businesses(name, slug)")
         .order("created_at", { ascending: false })
         .limit(200);
       if (q) query = query.or(`email.ilike.%${q}%,business_name.ilike.%${q}%`);
+      if (planFilter !== "all") query = query.eq("plan", planFilter);
+      if (statusFilter === "lifetime") query = query.eq("lifetime_free", true);
+      else if (statusFilter !== "all") query = query.eq("subscription_status", statusFilter);
+      if (sinceFilter !== "all") {
+        const days = Number(sinceFilter);
+        query = query.gte("created_at", new Date(Date.now() - days * 86400000).toISOString());
+      }
       return (await query).data ?? [];
     },
   });
+
 
   const { data: businesses } = useQuery({
     queryKey: ["admin-biz", q],
@@ -115,7 +141,11 @@ function Admin() {
     },
   });
 
-  const updateProfile = async (id: string, patch: { plan?: string; is_founder_free?: boolean; is_admin?: boolean }) => {
+  const updateProfile = async (
+    id: string,
+    patch: { plan?: string; is_founder_free?: boolean; is_admin?: boolean; lifetime_free?: boolean; subscription_status?: string },
+  ) => {
+
     const { error } = await supabase.from("profiles").update(patch).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Updated");
@@ -150,7 +180,12 @@ function Admin() {
         <Stat icon={QrCode} label="QR Scans" value={stats?.total_scans ?? 0} tint="bg-indigo-50 text-indigo-700" />
         <Stat icon={Gift} label="Coupons Used" value={stats?.coupons_used ?? 0} tint="bg-rose-50 text-rose-700" />
         <Stat icon={Package} label="Standees pending" value={stats?.pending_standees ?? 0} tint="bg-orange-50 text-orange-700" />
+        <Stat icon={Clock} label="On free trial" value={stats?.trialing ?? 0} tint="bg-teal-50 text-teal-700" />
+        <Stat icon={Crown} label="Lifetime free" value={stats?.lifetime ?? 0} tint="bg-yellow-50 text-yellow-700" />
+        <Stat icon={Users} label="Active (30d)" value={stats?.active30 ?? 0} tint="bg-lime-50 text-lime-700" />
+        <Stat icon={TrendingUp} label="Trial churn" value={stats?.churned ?? 0} tint="bg-red-50 text-red-700" />
       </div>
+
 
       <div className="bg-white border border-black/10 rounded-2xl">
         <div className="flex items-center justify-between border-b border-black/5 p-2 gap-2 flex-wrap">
@@ -206,65 +241,131 @@ function Admin() {
         )}
 
         {tab === "users" && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[900px]">
-              <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">
-                <tr>
-                  <th className="text-left p-3">Email</th>
-                  <th className="text-left p-3">Business</th>
-                  <th className="text-left p-3">City</th>
-                  <th className="text-left p-3">Plan</th>
-                  <th className="text-left p-3">Lifetime Free</th>
-                  <th className="text-left p-3">Admin</th>
-                  <th className="text-left p-3">Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(users ?? []).map((u) => (
-                  <tr key={u.id} className="border-t border-black/5">
-                    <td className="p-3 font-semibold truncate max-w-[240px]">{u.email}</td>
-                    <td className="p-3">{u.business_name ?? "—"}</td>
-                    <td className="p-3">{u.city ?? "—"}</td>
-                    <td className="p-3">
-                      <select
-                        value={u.plan ?? "starter"}
-                        onChange={(e) => updateProfile(u.id, { plan: e.target.value })}
-                        className="h-8 rounded-md border border-black/10 px-1.5 text-xs font-semibold bg-white"
-                      >
-                        {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-                      </select>
-                    </td>
-                    <td className="p-3">
-                      <button
-                        onClick={() => updateProfile(u.id, { is_founder_free: !u.is_founder_free })}
-                        className={[
-                          "text-[11px] font-bold px-2 py-1 rounded",
-                          u.is_founder_free ? "bg-emerald-600 text-white" : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200",
-                        ].join(" ")}
-                      >
-                        {u.is_founder_free ? "FREE ✓" : "Grant free"}
-                      </button>
-                    </td>
-                    <td className="p-3">
-                      <button
-                        onClick={() => updateProfile(u.id, { is_admin: !u.is_admin })}
-                        className={[
-                          "text-[11px] font-bold px-2 py-1 rounded",
-                          u.is_admin ? "bg-black text-white" : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200",
-                        ].join(" ")}
-                      >
-                        {u.is_admin ? "Admin ✓" : "Make admin"}
-                      </button>
-                    </td>
-                    <td className="p-3 text-xs text-zinc-500">{new Date(u.created_at ?? 0).toLocaleDateString()}</td>
+          <div>
+            <div className="flex flex-wrap gap-2 p-3 border-b border-black/5">
+              <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="h-9 rounded-lg border border-black/10 px-2 text-xs font-semibold bg-white">
+                <option value="all">All plans</option>
+                {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-9 rounded-lg border border-black/10 px-2 text-xs font-semibold bg-white">
+                <option value="all">All statuses</option>
+                <option value="trialing">Trialing</option>
+                <option value="active">Active</option>
+                <option value="lifetime">Lifetime free</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <select value={sinceFilter} onChange={(e) => setSinceFilter(e.target.value)} className="h-9 rounded-lg border border-black/10 px-2 text-xs font-semibold bg-white">
+                <option value="all">Any signup date</option>
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+              </select>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[1180px]">
+                <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">
+                  <tr>
+                    <th className="text-left p-3">Owner</th>
+                    <th className="text-left p-3">Business</th>
+                    <th className="text-left p-3">Review page / QR</th>
+                    <th className="text-left p-3">Plan</th>
+                    <th className="text-left p-3">Status</th>
+                    <th className="text-left p-3">Lifetime Free</th>
+                    <th className="text-left p-3">Admin</th>
+                    <th className="text-left p-3">Signup / Last active</th>
                   </tr>
-                ))}
-                {(users ?? []).length === 0 && (
-                  <tr><td colSpan={7} className="p-6 text-center text-sm text-zinc-500">No users found.</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {(users ?? []).map((u) => {
+                    const b = Array.isArray(u.businesses) ? u.businesses[0] : null;
+                    const slug = b?.slug ?? null;
+                    const url = slug ? `${origin}/r/${slug}` : null;
+                    const trialLeft = u.trial_ends_at ? Math.ceil((new Date(u.trial_ends_at).getTime() - Date.now()) / 86400000) : null;
+                    return (
+                      <tr key={u.id} className="border-t border-black/5 align-top">
+                        <td className="p-3">
+                          <div className="font-semibold truncate max-w-[220px]">{u.email}</div>
+                          <div className="text-xs text-zinc-500">{u.phone ?? "no phone"} · {u.city ?? "—"}</div>
+                        </td>
+                        <td className="p-3">{b?.name ?? u.business_name ?? "—"}</td>
+                        <td className="p-3">
+                          {url ? (
+                            <div className="flex items-center gap-2">
+                              <div className="bg-white border border-black/10 rounded p-1">
+                                <QRCodeSVG value={url} size={44} />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-mono text-[11px] truncate max-w-[150px]">/r/{slug}</div>
+                                <div className="flex gap-2 mt-0.5">
+                                  <button onClick={() => { navigator.clipboard.writeText(url); toast.success("Link copied"); }} className="text-[11px] inline-flex items-center gap-1 text-zinc-600 hover:text-black"><Copy className="w-3 h-3" />Copy</button>
+                                  <a href={url} target="_blank" rel="noreferrer" className="text-[11px] inline-flex items-center gap-1 text-blue-600 hover:underline"><ExternalLink className="w-3 h-3" />Open</a>
+                                </div>
+                              </div>
+                            </div>
+                          ) : <span className="text-xs text-zinc-400">No business yet</span>}
+                        </td>
+                        <td className="p-3">
+                          <select
+                            value={u.plan ?? "starter"}
+                            onChange={(e) => updateProfile(u.id, { plan: e.target.value })}
+                            className="h-8 rounded-md border border-black/10 px-1.5 text-xs font-semibold bg-white"
+                          >
+                            {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                          <div className="text-[11px] text-zinc-500 mt-1">₹{u.plan_price ?? 0}/mo</div>
+                        </td>
+                        <td className="p-3">
+                          {u.lifetime_free ? (
+                            <span className="text-[11px] font-bold px-2 py-1 rounded bg-[#c9a227] text-black">LIFETIME</span>
+                          ) : u.subscription_status === "trialing" ? (
+                            <span className={"text-[11px] font-bold px-2 py-1 rounded " + ((trialLeft ?? 0) > 0 ? "bg-teal-100 text-teal-800" : "bg-red-100 text-red-700")}>
+                              {(trialLeft ?? 0) > 0 ? `Trial · ${trialLeft}d left` : "Trial ended"}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-800">{u.subscription_status ?? "active"}</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <button
+                            onClick={() => updateProfile(u.id, {
+                              lifetime_free: !u.lifetime_free,
+                              is_founder_free: !u.lifetime_free,
+                              subscription_status: !u.lifetime_free ? "lifetime" : "trialing",
+                            })}
+                            className={[
+                              "text-[11px] font-bold px-2 py-1 rounded",
+                              u.lifetime_free ? "bg-emerald-600 text-white" : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200",
+                            ].join(" ")}
+                          >
+                            {u.lifetime_free ? "FREE ✓ (revoke)" : "Grant lifetime free"}
+                          </button>
+                        </td>
+                        <td className="p-3">
+                          <button
+                            onClick={() => updateProfile(u.id, { is_admin: !u.is_admin })}
+                            className={[
+                              "text-[11px] font-bold px-2 py-1 rounded",
+                              u.is_admin ? "bg-black text-white" : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200",
+                            ].join(" ")}
+                          >
+                            {u.is_admin ? "Admin ✓" : "Make admin"}
+                          </button>
+                        </td>
+                        <td className="p-3 text-xs text-zinc-500">
+                          <div>{new Date(u.created_at ?? 0).toLocaleDateString()}</div>
+                          <div className="text-[11px]">Active: {u.last_active_at ? new Date(u.last_active_at).toLocaleDateString() : "—"}</div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {(users ?? []).length === 0 && (
+                    <tr><td colSpan={8} className="p-6 text-center text-sm text-zinc-500">No users found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
         )}
 
         {tab === "reviews" && (
