@@ -66,30 +66,7 @@ function Onboarding() {
 
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/r/${form.slug || "your-shop"}` : "";
 
-  const runSearch = async () => {
-    setErrorBanner(null);
-    if (q.trim().length < 2) {
-      setErrorBanner("Type at least 2 letters of your business name, then search again. Add city/area for better Google results.");
-      return;
-    }
-    setSearching(true);
-    try {
-      const res = await search({ data: { query: q } });
-      setResults(res.results);
-      if (res.results.length === 0) {
-        setErrorBanner("No matching Google business found. Try business name + city, or open 'Enter manually' below.");
-        toast.info("No results. Try a more specific search.");
-      }
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Search failed";
-      setErrorBanner(`${message}. Check that the Google Maps API key is active, Places API is enabled, and try again.`);
-      toast.error(message);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const pickPlace = async (p: PlaceSummary) => {
+  const pickPlace = async (p: PlaceSuggestion) => {
     setBusy(true);
     setErrorBanner(null);
     try {
