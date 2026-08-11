@@ -164,54 +164,20 @@ function Onboarding() {
           {step === 1 && (
             <>
               <h1 className="font-black text-2xl">Find your business on Google</h1>
-              <p className="text-sm text-zinc-500 mt-1">Search once — we auto-fill name, address, phone, photos, and reviews.</p>
+              <p className="text-sm text-zinc-500 mt-1">Start typing — pick your business from the suggestions and we auto-fill everything.</p>
               <div className="mt-5">
-                <div className="flex items-center rounded-lg border border-black/15 overflow-hidden">
-                  <Search className="w-4 h-4 ml-3 text-zinc-400" />
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } }}
-                    placeholder="Rakesh Tea Stall, Visavadar"
-                    className="flex-1 px-3 h-11 text-sm outline-none"
-                  />
-                  <button onClick={runSearch} disabled={searching || q.trim().length < 2}
-                    className="h-11 px-4 bg-black text-white text-sm font-bold disabled:opacity-50">
-                    {searching ? "…" : "Search"}
-                  </button>
-                </div>
-
-                {results.length > 0 && (
-                  <div className="mt-3 space-y-2 max-h-72 overflow-auto">
-                    {results.map((r) => {
-                      const isSel = selected?.place_id === r.place_id;
-                      return (
-                        <button
-                          key={r.place_id}
-                          onClick={() => pickPlace(r)}
-                          disabled={busy}
-                          className={"w-full text-left p-3 rounded-lg border-2 transition disabled:opacity-60 " +
-                            (isSel ? "border-black bg-zinc-50" : "border-zinc-200 hover:border-zinc-400")}
-                        >
-                          <div className="font-semibold text-sm">{r.name}</div>
-                          <div className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3" /> {r.address}
-                          </div>
-                          {typeof r.rating === "number" && (
-                            <div className="text-xs mt-1 flex items-center gap-1 text-amber-600">
-                              <Star className="w-3 h-3 fill-current" /> {r.rating.toFixed(1)}
-                              <span className="text-zinc-400">({r.user_rating_count ?? 0} reviews)</span>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                <PlaceSearchInput
+                  value={q}
+                  onValueChange={setQ}
+                  disabled={busy}
+                  placeholder="Rakesh Tea Stall, Visavadar"
+                  onSelect={pickPlace}
+                />
 
                 {selected && (
-                  <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
-                    ✓ {selected.name} loaded — {selected.user_rating_count ?? 0} Google reviews, {selected.rating?.toFixed(1) ?? "—"}★
+                  <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-1.5">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    {selected.name} loaded — {selected.user_rating_count ?? 0} Google reviews, {selected.rating?.toFixed(1) ?? "—"}★
                   </div>
                 )}
 
