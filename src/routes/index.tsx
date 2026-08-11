@@ -88,7 +88,7 @@ function Landing() {
           </div>
           <div className="min-w-0">
             <div className="font-bold text-[17px] md:text-lg leading-tight">
-              Customer scans → Review → Coupon
+              Customer scans → Review → Google
             </div>
             <p className="mt-1 text-sm text-zinc-600 leading-relaxed">
               Negative reviews go to WhatsApp <span className="font-semibold">(Rs 7k/mo value)</span>. Positive → Google. Auto GMB posts <span className="font-semibold">Rs 8k/mo value</span>.
@@ -151,7 +151,7 @@ function Landing() {
             { icon: QrCode, title: "QR + /r/slug", value: "Rs 1k", desc: "Custom slug for your shop" },
             { icon: Sparkles, title: "AI Writer", value: "Rs 3k/mo", desc: "Gujarati Hinglish English" },
             { icon: Shield, title: "Negative Filter", value: "Rs 7k/mo", desc: "1-2 star private to WhatsApp" },
-            { icon: Gift, title: "Coupon Engine", value: "Rs 1.5k", desc: "Auto 10% OFF on review" },
+            { icon: Star, title: "Live Google Reviews", value: "Rs 4k/mo", desc: "See new reviews instantly" },
             { icon: MessageSquare, title: "Reviews Inbox", value: "Rs 5k/mo", desc: "All reviews one place" },
             { icon: Sparkles, title: "AI Reply", value: "Rs 5k/mo", desc: "Instant 3 variants" },
             { icon: TrendingUp, title: "GMB Manager", value: "Rs 8k/mo", desc: "Auto posts + Q&A" },
@@ -196,7 +196,6 @@ function Landing() {
               "1 Standee FREE (Rs 1.5k value)",
               "QR code + custom slug",
               "Negative review filter",
-              "10% OFF coupon engine",
               "Reviews inbox",
               "Email support",
               "Cancel anytime",

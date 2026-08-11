@@ -274,10 +274,10 @@ function Dashboard() {
           <div className="font-bold text-sm">AI reply drafts</div>
           <div className="text-xs text-zinc-500">Reply to every review fast</div>
         </Link>
-        <Link to="/coupons" className="bg-white border border-black/10 rounded-xl p-4 hover:shadow-md">
-          <Gift className="w-5 h-5 mb-2" />
-          <div className="font-bold text-sm">Coupons</div>
-          <div className="text-xs text-zinc-500">Reward happy customers</div>
+        <Link to="/reviews" className="bg-white border border-black/10 rounded-xl p-4 hover:shadow-md">
+          <MessageSquare className="w-5 h-5 mb-2" />
+          <div className="font-bold text-sm">Reviews</div>
+          <div className="text-xs text-zinc-500">Live Google + QR reviews</div>
         </Link>
         <Link to="/competitors" className="bg-white border border-black/10 rounded-xl p-4 hover:shadow-md">
           <Trophy className="w-5 h-5 mb-2" />

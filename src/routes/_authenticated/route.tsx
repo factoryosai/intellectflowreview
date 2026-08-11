@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { LayoutDashboard, MessageSquare, Sparkles, TrendingUp, Gift, MessageCircle, Users, Image, QrCode, Settings, CreditCard, Shield, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Sparkles, TrendingUp, MessageCircle, Users, Image, QrCode, Settings, CreditCard, Shield, LogOut, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -23,7 +23,6 @@ const nav = [
   { to: "/reviews", label: "Reviews", icon: MessageSquare },
   { to: "/ai-reply", label: "AI Reply", icon: Sparkles },
   { to: "/gmb", label: "GMB Posts", icon: TrendingUp },
-  { to: "/coupons", label: "Coupons", icon: Gift },
   { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { to: "/competitors", label: "Competitors", icon: Users },
   { to: "/standees", label: "Standees", icon: Image },
