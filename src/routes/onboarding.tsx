@@ -2,10 +2,11 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { searchPlaces, getPlaceDetails, type PlaceSummary, type PlaceDetails } from "@/lib/places.functions";
+import { getPlaceDetails, type PlaceDetails, type PlaceSuggestion } from "@/lib/places.functions";
+import { PlaceSearchInput } from "@/components/PlaceSearchInput";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
-import { Check, ArrowRight, Download, Search, Star, MapPin } from "lucide-react";
+import { Check, ArrowRight, Download, Star } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
