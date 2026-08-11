@@ -1,5 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { aiWriter } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Star, Check, Copy, Loader2, ExternalLink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -117,7 +119,7 @@ function PublicReview() {
         review_text: text,
         customer_name: customerName || null,
         customer_phone: customerPhone || null,
-        ai_generated: positive && templates.includes(text),
+        ai_generated: positive && templates.some((t) => t.text === text),
       }),
     });
     if (!res.ok) throw new Error("Submit failed");
@@ -225,18 +227,30 @@ function PublicReview() {
           {step === "positive" && (
             <>
               <p className="mt-6 text-sm font-semibold">Pick a review — we'll copy it and take you to Google.</p>
+              {aiLoading && (
+                <div className="mt-2 text-xs text-zinc-500 inline-flex items-center gap-1.5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> AI is writing short reviews for you…
+                </div>
+              )}
               <div className="mt-3 space-y-2 max-h-[320px] overflow-y-auto pr-0.5">
                 {templates.map((s, i) => (
                   <button
                     key={i}
-                    onClick={() => setText(s)}
+                    onClick={() => setText(s.text)}
                     className={
                       "w-full text-left p-3 rounded-lg border transition text-sm " +
-                      (text === s ? "border-[#c9a227] bg-[#fdf6ef]" : "border-zinc-200 hover:border-zinc-400")
+                      (text === s.text ? "border-[#c9a227] bg-[#fdf6ef]" : "border-zinc-200 hover:border-zinc-400")
                     }
                   >
-                    <span className="text-zinc-700">{s}</span>
-                    {text === s && <Check className="inline w-4 h-4 ml-1 text-emerald-600" />}
+                    <span className="text-zinc-700">{s.text}</span>
+                    {text === s.text && <Check className="inline w-4 h-4 ml-1 text-emerald-600" />}
+                    {s.keywords.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {s.keywords.slice(0, 2).map((k) => (
+                          <span key={k} className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">#{k}</span>
+                        ))}
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
