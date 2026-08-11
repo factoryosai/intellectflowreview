@@ -40,22 +40,24 @@ export const Route = createFileRoute("/r/$slug")({
 
 type Step = "rate" | "negative" | "positive" | "redirect" | "done";
 
-function buildTemplates(name: string, type: string) {
+type Suggestion = { text: string; keywords: string[] };
+
+function buildTemplates(name: string, type: string, city: string): Suggestion[] {
   const t = type || "business";
+  const c = city || "town";
   return [
-    `Great experience at ${name}. Friendly staff and excellent service — highly recommended!`,
-    `${name} is the best ${t} in the area. Quality is consistently good and prices are fair.`,
-    `Visited ${name} today and was really impressed. Clean, quick and very professional.`,
-    `Superb service at ${name}. The team went out of their way to help me. 5 stars!`,
-    `Highly recommend ${name}. Great quality, honest pricing and a very welcoming team.`,
-    `${name} નો અનુભવ ખૂબ સરસ રહ્યો. સ્ટાફ ખૂબ સહકારી અને સેવા ઉત્તમ છે.`,
-    `${name} में बहुत अच्छा अनुभव रहा। स्टाफ मददगार है और सर्विस शानदार है।`,
+    { text: `Best ${t} in ${c}. Friendly staff and excellent service at ${name}.`, keywords: [t, c] },
+    { text: `Great quality and fair prices at ${name} — my go-to ${t} in ${c}.`, keywords: [t, c] },
+    { text: `Quick, clean and very professional. ${name} is a top ${t} in ${c}.`, keywords: [t, c] },
+    { text: `${name} નો અનુભવ સરસ રહ્યો. ${c} નું શ્રેષ્ઠ ${t}.`, keywords: [t, c] },
+    { text: `${name} में सर्विस शानदार है — ${c} का बेहतरीन ${t}.`, keywords: [t, c] },
   ];
 }
 
 function PublicReview() {
   const biz = Route.useLoaderData();
   const bizName = biz.name ?? "this business";
+  const writer = useServerFn(aiWriter);
   const [rating, setRating] = useState(0);
   const [step, setStep] = useState<Step>("rate");
   const [customerName, setName] = useState("");
@@ -63,13 +65,47 @@ function PublicReview() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [countdown, setCountdown] = useState(3);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiItems, setAiItems] = useState<Suggestion[] | null>(null);
 
-  const templates = useMemo(() => buildTemplates(bizName, biz.business_type ?? "shop"), [bizName, biz.business_type]);
+  const fallback = useMemo(
+    () => buildTemplates(bizName, biz.business_type ?? "shop", biz.city ?? ""),
+    [bizName, biz.business_type, biz.city],
+  );
+  const templates = aiItems ?? fallback;
 
   useEffect(() => {
     if (rating === 0) return;
     setStep(rating <= 3 ? "negative" : "positive");
   }, [rating]);
+
+  useEffect(() => {
+    if (step !== "positive" || aiItems || aiLoading) return;
+    let cancelled = false;
+    setAiLoading(true);
+    writer({
+      data: {
+        rating,
+        businessName: bizName,
+        businessType: biz.business_type ?? "shop",
+        businessCity: biz.city ?? undefined,
+        businessDescription: biz.description ?? undefined,
+        count: 5,
+      },
+    })
+      .then((res) => {
+        if (cancelled) return;
+        const items = (res.suggestions ?? [])
+          .filter((s) => s.text?.trim())
+          .map((s) => ({ text: s.text.trim(), keywords: (s.keywords ?? []).slice(0, 2) }));
+        if (items.length) setAiItems(items);
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setAiLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [step, aiItems, aiLoading, writer, rating, bizName, biz.business_type, biz.city, biz.description]);
 
   const submit = async (positive: boolean) => {
     const res = await fetch("/api/public/submit-review", {
