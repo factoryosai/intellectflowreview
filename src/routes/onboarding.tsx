@@ -39,7 +39,6 @@ function slugify(s: string) {
 
 function Onboarding() {
   const nav = useNavigate();
-  const search = useServerFn(searchPlaces);
   const details = useServerFn(getPlaceDetails);
 
   const [step, setStep] = useState(1);
@@ -48,8 +47,6 @@ function Onboarding() {
 
   // Search state
   const [q, setQ] = useState("");
-  const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState<PlaceSummary[]>([]);
   const [selected, setSelected] = useState<PlaceDetails | null>(null);
 
   const [form, setForm] = useState({
