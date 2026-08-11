@@ -101,7 +101,7 @@ function Onboarding() {
     setErrorBanner(null);
     if (!form.name.trim()) { setErrorBanner("Business name is required. Search and select your Google business, or enter it manually."); toast.error("Business name is required"); setStep(1); return; }
     if (!form.slug.trim()) { setErrorBanner("Public URL slug is required. Add a short link like your-shop-name."); toast.error("Public URL slug is required"); setStep(2); return; }
-    if (!form.phone.trim()) { setErrorBanner("WhatsApp phone is required so review automation and coupon messages can work."); toast.error("WhatsApp phone is required"); setStep(2); return; }
+    if (!form.phone.trim()) { setErrorBanner("WhatsApp phone is required so review automation and WhatsApp messages can work."); toast.error("WhatsApp phone is required"); setStep(2); return; }
     setBusy(true);
     try {
       const { data: u, error: uErr } = await supabase.auth.getUser();
