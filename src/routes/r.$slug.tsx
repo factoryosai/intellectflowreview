@@ -62,7 +62,6 @@ function PublicReview() {
   const [customerPhone, setPhone] = useState("");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [couponCode, setCouponCode] = useState("");
   const [countdown, setCountdown] = useState(3);
 
   const templates = useMemo(() => buildTemplates(bizName, biz.business_type ?? "shop"), [bizName, biz.business_type]);
@@ -86,7 +85,7 @@ function PublicReview() {
       }),
     });
     if (!res.ok) throw new Error("Submit failed");
-    return (await res.json()) as { couponCode?: string | null; gmb_link?: string | null };
+    return (await res.json()) as { gmb_link?: string | null };
   };
 
   const submitPrivate = async () => {
@@ -112,7 +111,6 @@ function PublicReview() {
         /* clipboard may be blocked; the review text is still shown below */
       }
       const json = await submit(true);
-      if (json.couponCode) setCouponCode(json.couponCode);
       toast.success("Review copied! Paste it in Google's review box.");
       const link = json.gmb_link ?? biz.gmb_link ?? null;
       if (link) {
@@ -243,13 +241,6 @@ function PublicReview() {
                   <ExternalLink className="w-4 h-4" /> Go now
                 </a>
               </div>
-              {couponCode && (
-                <div className="mt-4 rounded-xl border-2 border-dashed border-[#c9a227] bg-[#fdf6ef] p-3">
-                  <div className="text-[11px] font-bold uppercase text-zinc-500">Your reward</div>
-                  <div className="font-black text-xl tracking-wider">{couponCode}</div>
-                  <div className="text-xs text-zinc-600">10% OFF on your next visit</div>
-                </div>
-              )}
             </div>
           )}
 
@@ -262,13 +253,6 @@ function PublicReview() {
               <p className="mt-1 text-sm text-zinc-600">
                 {rating <= 3 ? "The owner has received your feedback privately and will get in touch." : "Your review has been saved."}
               </p>
-              {couponCode && (
-                <div className="mt-4 rounded-xl border-2 border-dashed border-[#c9a227] bg-[#fdf6ef] p-3">
-                  <div className="text-[11px] font-bold uppercase text-zinc-500">Your reward</div>
-                  <div className="font-black text-xl tracking-wider">{couponCode}</div>
-                  <div className="text-xs text-zinc-600">10% OFF on your next visit</div>
-                </div>
-              )}
             </div>
           )}
         </div>

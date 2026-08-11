@@ -5,7 +5,7 @@ import { getMyBusiness, getMyProfile } from "@/lib/queries";
 import { computeAccess, PLANS } from "@/lib/plans";
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
-import { MessageSquare, Star, QrCode, Gift, TrendingUp, Copy, ExternalLink, Crown, Clock, Download, Gauge, Trophy, Reply } from "lucide-react";
+import { MessageSquare, Star, QrCode, TrendingUp, Copy, ExternalLink, Crown, Clock, Download, Gauge, Trophy, Reply } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
