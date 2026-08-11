@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, Gift, QrCode, Star, Package, Copy, ExternalLink, Clock, Crown } from "lucide-react";
+import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, QrCode, Star, Package, Copy, ExternalLink, Clock, Crown } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 
@@ -47,12 +47,11 @@ function Admin() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [users, biz, reviews, subs, coupons, scans, standees, profs] = await Promise.all([
+      const [users, biz, reviews, subs, scans, standees, profs] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("businesses").select("*", { count: "exact", head: true }),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
         supabase.from("subscriptions").select("price, status, is_lifetime"),
-        supabase.from("coupons").select("used_count"),
         supabase.from("businesses").select("total_scans"),
         supabase.from("standees").select("status"),
         supabase.from("profiles").select("plan, plan_price, lifetime_free, subscription_status, trial_ends_at, last_active_at"),
@@ -75,7 +74,6 @@ function Admin() {
         churned,
         lifetime,
         active30,
-        coupons_used: (coupons.data ?? []).reduce((s, c) => s + (c.used_count ?? 0), 0),
         total_scans: (scans.data ?? []).reduce((s, b) => s + (b.total_scans ?? 0), 0),
         pending_standees: (standees.data ?? []).filter((s) => s.status === "pending" || s.status === "printing").length,
       };
@@ -178,7 +176,6 @@ function Admin() {
         <Stat icon={DollarSign} label="MRR (₹)" value={stats?.mrr ?? 0} tint="bg-fuchsia-50 text-fuchsia-700" />
         <Stat icon={TrendingUp} label="Active Subs" value={stats?.activeSubs ?? 0} tint="bg-sky-50 text-sky-700" />
         <Stat icon={QrCode} label="QR Scans" value={stats?.total_scans ?? 0} tint="bg-indigo-50 text-indigo-700" />
-        <Stat icon={Gift} label="Coupons Used" value={stats?.coupons_used ?? 0} tint="bg-rose-50 text-rose-700" />
         <Stat icon={Package} label="Standees pending" value={stats?.pending_standees ?? 0} tint="bg-orange-50 text-orange-700" />
         <Stat icon={Clock} label="On free trial" value={stats?.trialing ?? 0} tint="bg-teal-50 text-teal-700" />
         <Stat icon={Crown} label="Lifetime free" value={stats?.lifetime ?? 0} tint="bg-yellow-50 text-yellow-700" />
