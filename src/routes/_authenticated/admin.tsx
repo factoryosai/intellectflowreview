@@ -1,8 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { PlaceSearchInput } from "@/components/PlaceSearchInput";
+import { adminOnboardUser } from "@/lib/admin.functions";
+import { getPlaceDetails } from "@/lib/places.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, Gift, QrCode, Star, Package, Copy, ExternalLink, Clock, Crown } from "lucide-react";
+import { Users, Building2, MessageSquare, DollarSign, TrendingUp, Search, Shield, QrCode, Star, Package, Copy, ExternalLink, Clock, Crown } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 
@@ -41,18 +45,17 @@ function Admin() {
   const [planFilter, setPlanFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sinceFilter, setSinceFilter] = useState<string>("all");
-  const [tab, setTab] = useState<"overview" | "users" | "businesses" | "standees" | "reviews">("overview");
+  const [tab, setTab] = useState<"overview" | "users" | "businesses" | "onboard" | "standees" | "reviews">("overview");
 
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [users, biz, reviews, subs, coupons, scans, standees, profs] = await Promise.all([
+      const [users, biz, reviews, subs, scans, standees, profs] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("businesses").select("*", { count: "exact", head: true }),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
         supabase.from("subscriptions").select("price, status, is_lifetime"),
-        supabase.from("coupons").select("used_count"),
         supabase.from("businesses").select("total_scans"),
         supabase.from("standees").select("status"),
         supabase.from("profiles").select("plan, plan_price, lifetime_free, subscription_status, trial_ends_at, last_active_at"),
@@ -75,7 +78,6 @@ function Admin() {
         churned,
         lifetime,
         active30,
-        coupons_used: (coupons.data ?? []).reduce((s, c) => s + (c.used_count ?? 0), 0),
         total_scans: (scans.data ?? []).reduce((s, b) => s + (b.total_scans ?? 0), 0),
         pending_standees: (standees.data ?? []).filter((s) => s.status === "pending" || s.status === "printing").length,
       };
@@ -178,7 +180,6 @@ function Admin() {
         <Stat icon={DollarSign} label="MRR (₹)" value={stats?.mrr ?? 0} tint="bg-fuchsia-50 text-fuchsia-700" />
         <Stat icon={TrendingUp} label="Active Subs" value={stats?.activeSubs ?? 0} tint="bg-sky-50 text-sky-700" />
         <Stat icon={QrCode} label="QR Scans" value={stats?.total_scans ?? 0} tint="bg-indigo-50 text-indigo-700" />
-        <Stat icon={Gift} label="Coupons Used" value={stats?.coupons_used ?? 0} tint="bg-rose-50 text-rose-700" />
         <Stat icon={Package} label="Standees pending" value={stats?.pending_standees ?? 0} tint="bg-orange-50 text-orange-700" />
         <Stat icon={Clock} label="On free trial" value={stats?.trialing ?? 0} tint="bg-teal-50 text-teal-700" />
         <Stat icon={Crown} label="Lifetime free" value={stats?.lifetime ?? 0} tint="bg-yellow-50 text-yellow-700" />
@@ -190,7 +191,7 @@ function Admin() {
       <div className="bg-white border border-black/10 rounded-2xl">
         <div className="flex items-center justify-between border-b border-black/5 p-2 gap-2 flex-wrap">
           <div className="flex gap-1 flex-wrap">
-            {(["overview", "users", "businesses", "standees", "reviews"] as const).map((t) => (
+            {(["overview", "users", "businesses", "onboard", "standees", "reviews"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -233,6 +234,8 @@ function Admin() {
         )}
 
         {tab === "businesses" && <BizTable rows={businesses ?? []} />}
+
+        {tab === "onboard" && <AdminOnboard />}
 
         {tab === "standees" && (
           <div className="p-2">
@@ -539,6 +542,155 @@ function Stat({ icon: Icon, label, value, tint }: { icon: React.ElementType; lab
         </span>
       </div>
       <div className="mt-2 font-black text-2xl">{value.toLocaleString()}</div>
+    </div>
+  );
+}
+
+function slugify(v: string) {
+  return v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+}
+
+function AdminOnboard() {
+  const qc = useQueryClient();
+  const onboard = useServerFn(adminOnboardUser);
+  const details = useServerFn(getPlaceDetails);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [userQ, setUserQ] = useState("");
+  const [form, setForm] = useState({
+    user_id: "", name: "", slug: "", phone: "", city: "", address: "",
+    place_id: "", gmb_link: "", photo_url: "", website: "", business_type: "", description: "",
+    plan: "growth" as "starter" | "growth" | "pro",
+  });
+
+  const { data: candidates } = useQuery({
+    queryKey: ["admin-onboard-users", userQ],
+    queryFn: async () => {
+      const [{ data: profs }, { data: biz }] = await Promise.all([
+        supabase.from("profiles").select("id, email, business_name, phone, city, created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("businesses").select("user_id"),
+      ]);
+      const taken = new Set((biz ?? []).map((b) => b.user_id));
+      const term = userQ.trim().toLowerCase();
+      return (profs ?? [])
+        .filter((p) => !taken.has(p.id))
+        .filter((p) => !term || (p.email ?? "").toLowerCase().includes(term) || (p.business_name ?? "").toLowerCase().includes(term));
+    },
+  });
+
+  const pickPlace = async (place_id: string) => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const d = await details({ data: { place_id } });
+      setForm((f) => ({
+        ...f,
+        name: d.name,
+        slug: f.slug || slugify(d.name),
+        phone: d.phone ?? f.phone,
+        city: d.city ?? f.city,
+        address: d.address,
+        place_id: d.place_id,
+        gmb_link: `https://search.google.com/local/writereview?placeid=${d.place_id}`,
+        photo_url: d.photo_url ?? "",
+        website: d.website ?? "",
+        business_type: d.business_type ?? "",
+      }));
+      toast.success("Google details loaded");
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Could not load place");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const save = async () => {
+    setErr(null);
+    if (!form.user_id) return setErr("Select the user account you are onboarding.");
+    if (!form.name.trim()) return setErr("Business name is required.");
+    if (!form.slug.trim()) return setErr("Public URL slug is required.");
+    setBusy(true);
+    try {
+      await onboard({ data: { ...form, slug: slugify(form.slug) } });
+      toast.success("User onboarded");
+      setForm({ user_id: "", name: "", slug: "", phone: "", city: "", address: "", place_id: "", gmb_link: "", photo_url: "", website: "", business_type: "", description: "", plan: "growth" });
+      qc.invalidateQueries({ queryKey: ["admin-biz"] });
+      qc.invalidateQueries({ queryKey: ["admin-onboard-users"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Onboarding failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="p-4 space-y-5 max-w-3xl">
+      <div>
+        <h2 className="font-black text-lg">Onboard a user</h2>
+        <p className="text-sm text-zinc-500">Connect a Google business profile on behalf of any account that has not been set up yet.</p>
+      </div>
+
+      {err && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900">{err}</div>}
+
+      <div>
+        <label className="text-xs font-bold uppercase tracking-wide text-zinc-500">1. User account</label>
+        <input value={userQ} onChange={(e) => setUserQ(e.target.value)} placeholder="Search by email or name…" className="mt-1 w-full h-10 rounded-lg border border-black/15 px-3 text-sm" />
+        <div className="mt-2 max-h-52 overflow-auto space-y-1.5">
+          {(candidates ?? []).length === 0 && <div className="text-xs text-zinc-500 p-2">No accounts pending onboarding.</div>}
+          {(candidates ?? []).map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setForm((f) => ({ ...f, user_id: p.id, phone: f.phone || (p.phone ?? ""), city: f.city || (p.city ?? "") }))}
+              className={"w-full text-left p-2.5 rounded-lg border-2 text-sm " + (form.user_id === p.id ? "border-black bg-zinc-50" : "border-zinc-200 hover:border-zinc-400")}
+            >
+              <div className="font-semibold">{p.email}</div>
+              <div className="text-xs text-zinc-500">{p.business_name || "No business name"} · joined {p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-bold uppercase tracking-wide text-zinc-500">2. Find business on Google</label>
+        <div className="mt-1">
+          <PlaceSearchInput disabled={busy} onSelect={(s) => pickPlace(s.place_id)} placeholder="Start typing the business name…" />
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <Field label="Business name" value={form.name} onChange={(v) => setForm({ ...form, name: v, slug: form.slug || slugify(v) })} />
+        <Field label="Public URL slug" value={form.slug} onChange={(v) => setForm({ ...form, slug: slugify(v) })} />
+        <Field label="WhatsApp phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
+        <Field label="City" value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
+        <Field label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+        <div>
+          <label className="text-xs font-semibold text-zinc-600">Plan</label>
+          <select value={form.plan} onChange={(e) => setForm({ ...form, plan: e.target.value as typeof form.plan })} className="mt-1 w-full h-10 rounded-lg border border-black/15 px-2 text-sm bg-white">
+            <option value="starter">Starter — Rs 299</option>
+            <option value="growth">Growth — Rs 599</option>
+            <option value="pro">Business Pro — Rs 1299</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-zinc-600">Description for AI</label>
+        <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 text-sm" />
+      </div>
+
+      <button onClick={save} disabled={busy} className="h-11 px-5 rounded-lg bg-black text-white font-bold text-sm disabled:opacity-60">
+        {busy ? "Saving…" : "Onboard this user"}
+      </button>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="text-xs font-semibold text-zinc-600">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full h-10 rounded-lg border border-black/15 px-3 text-sm" />
     </div>
   );
 }

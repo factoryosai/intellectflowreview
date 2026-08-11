@@ -4,10 +4,16 @@ import { z } from "zod";
 const BASE = "https://places.googleapis.com/v1";
 
 function key() {
-  const k = process.env.GOOGLE_API_KEY;
+  const k = process.env.GOOGLE_API_KEY || process.env.GOOGLE_ANALYTICS_API_KEY;
   if (!k) throw new Error("Missing GOOGLE_API_KEY");
   return k;
 }
+
+export type PlaceSuggestion = {
+  place_id: string;
+  primary: string;
+  secondary: string;
+};
 
 export type PlaceSummary = {
   place_id: string;
@@ -136,5 +142,53 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
         text: r.text?.text ?? r.originalText?.text ?? "",
         time: r.publishTime ?? "",
       })),
+    };
+  });
+
+// Type-ahead suggestions while the user is typing (Places Autocomplete - New)
+export const autocompletePlaces = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) =>
+    z.object({ input: z.string().trim().min(2).max(200) }).parse(raw),
+  )
+  .handler(async ({ data }): Promise<{ suggestions: PlaceSuggestion[] }> => {
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/places:autocomplete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key() },
+        body: JSON.stringify({
+          input: data.input,
+          regionCode: "IN",
+          includedRegionCodes: ["in"],
+        }),
+      });
+    } catch {
+      throw new Error("Could not reach Google Places. Check your internet and try again.");
+    }
+    if (!res.ok) {
+      const body = await res.text();
+      console.error(`[places.autocomplete] ${res.status}: ${body}`);
+      if (res.status === 403) throw new Error("Google Places API key is not authorized. Enable 'Places API (New)' on the key.");
+      return { suggestions: [] };
+    }
+    const json = (await res.json()) as {
+      suggestions?: Array<{
+        placePrediction?: {
+          placeId?: string;
+          structuredFormat?: { mainText?: { text?: string }; secondaryText?: { text?: string } };
+          text?: { text?: string };
+        };
+      }>;
+    };
+    return {
+      suggestions:
+        json.suggestions
+          ?.map((s) => s.placePrediction)
+          .filter((p): p is NonNullable<typeof p> => !!p?.placeId)
+          .map((p) => ({
+            place_id: p.placeId!,
+            primary: p.structuredFormat?.mainText?.text ?? p.text?.text ?? "",
+            secondary: p.structuredFormat?.secondaryText?.text ?? "",
+          })) ?? [],
     };
   });

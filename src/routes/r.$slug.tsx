@@ -1,5 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { aiWriter } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Star, Check, Copy, Loader2, ExternalLink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -40,37 +42,72 @@ export const Route = createFileRoute("/r/$slug")({
 
 type Step = "rate" | "negative" | "positive" | "redirect" | "done";
 
-function buildTemplates(name: string, type: string) {
+type Suggestion = { text: string; keywords: string[] };
+
+function buildTemplates(name: string, type: string, city: string): Suggestion[] {
   const t = type || "business";
+  const c = city || "town";
   return [
-    `Great experience at ${name}. Friendly staff and excellent service — highly recommended!`,
-    `${name} is the best ${t} in the area. Quality is consistently good and prices are fair.`,
-    `Visited ${name} today and was really impressed. Clean, quick and very professional.`,
-    `Superb service at ${name}. The team went out of their way to help me. 5 stars!`,
-    `Highly recommend ${name}. Great quality, honest pricing and a very welcoming team.`,
-    `${name} નો અનુભવ ખૂબ સરસ રહ્યો. સ્ટાફ ખૂબ સહકારી અને સેવા ઉત્તમ છે.`,
-    `${name} में बहुत अच्छा अनुभव रहा। स्टाफ मददगार है और सर्विस शानदार है।`,
+    { text: `Best ${t} in ${c}. Friendly staff and excellent service at ${name}.`, keywords: [t, c] },
+    { text: `Great quality and fair prices at ${name} — my go-to ${t} in ${c}.`, keywords: [t, c] },
+    { text: `Quick, clean and very professional. ${name} is a top ${t} in ${c}.`, keywords: [t, c] },
+    { text: `${name} નો અનુભવ સરસ રહ્યો. ${c} નું શ્રેષ્ઠ ${t}.`, keywords: [t, c] },
+    { text: `${name} में सर्विस शानदार है — ${c} का बेहतरीन ${t}.`, keywords: [t, c] },
   ];
 }
 
 function PublicReview() {
   const biz = Route.useLoaderData();
   const bizName = biz.name ?? "this business";
+  const writer = useServerFn(aiWriter);
   const [rating, setRating] = useState(0);
   const [step, setStep] = useState<Step>("rate");
   const [customerName, setName] = useState("");
   const [customerPhone, setPhone] = useState("");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [couponCode, setCouponCode] = useState("");
   const [countdown, setCountdown] = useState(3);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiItems, setAiItems] = useState<Suggestion[] | null>(null);
 
-  const templates = useMemo(() => buildTemplates(bizName, biz.business_type ?? "shop"), [bizName, biz.business_type]);
+  const fallback = useMemo(
+    () => buildTemplates(bizName, biz.business_type ?? "shop", biz.city ?? ""),
+    [bizName, biz.business_type, biz.city],
+  );
+  const templates = aiItems ?? fallback;
 
   useEffect(() => {
     if (rating === 0) return;
     setStep(rating <= 3 ? "negative" : "positive");
   }, [rating]);
+
+  useEffect(() => {
+    if (step !== "positive" || aiItems || aiLoading) return;
+    let cancelled = false;
+    setAiLoading(true);
+    writer({
+      data: {
+        rating,
+        businessName: bizName,
+        businessType: biz.business_type ?? "shop",
+        businessCity: biz.city ?? undefined,
+        businessDescription: biz.description ?? undefined,
+        count: 5,
+      },
+    })
+      .then((res) => {
+        if (cancelled) return;
+        const items = (res.suggestions ?? [])
+          .filter((s) => s.text?.trim())
+          .map((s) => ({ text: s.text.trim(), keywords: (s.keywords ?? []).slice(0, 2) }));
+        if (items.length) setAiItems(items);
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setAiLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [step, aiItems, aiLoading, writer, rating, bizName, biz.business_type, biz.city, biz.description]);
 
   const submit = async (positive: boolean) => {
     const res = await fetch("/api/public/submit-review", {
@@ -82,11 +119,11 @@ function PublicReview() {
         review_text: text,
         customer_name: customerName || null,
         customer_phone: customerPhone || null,
-        ai_generated: positive && templates.includes(text),
+        ai_generated: positive && templates.some((t) => t.text === text),
       }),
     });
     if (!res.ok) throw new Error("Submit failed");
-    return (await res.json()) as { couponCode?: string | null; gmb_link?: string | null };
+    return (await res.json()) as { gmb_link?: string | null };
   };
 
   const submitPrivate = async () => {
@@ -112,7 +149,6 @@ function PublicReview() {
         /* clipboard may be blocked; the review text is still shown below */
       }
       const json = await submit(true);
-      if (json.couponCode) setCouponCode(json.couponCode);
       toast.success("Review copied! Paste it in Google's review box.");
       const link = json.gmb_link ?? biz.gmb_link ?? null;
       if (link) {
@@ -191,18 +227,30 @@ function PublicReview() {
           {step === "positive" && (
             <>
               <p className="mt-6 text-sm font-semibold">Pick a review — we'll copy it and take you to Google.</p>
+              {aiLoading && (
+                <div className="mt-2 text-xs text-zinc-500 inline-flex items-center gap-1.5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> AI is writing short reviews for you…
+                </div>
+              )}
               <div className="mt-3 space-y-2 max-h-[320px] overflow-y-auto pr-0.5">
                 {templates.map((s, i) => (
                   <button
                     key={i}
-                    onClick={() => setText(s)}
+                    onClick={() => setText(s.text)}
                     className={
                       "w-full text-left p-3 rounded-lg border transition text-sm " +
-                      (text === s ? "border-[#c9a227] bg-[#fdf6ef]" : "border-zinc-200 hover:border-zinc-400")
+                      (text === s.text ? "border-[#c9a227] bg-[#fdf6ef]" : "border-zinc-200 hover:border-zinc-400")
                     }
                   >
-                    <span className="text-zinc-700">{s}</span>
-                    {text === s && <Check className="inline w-4 h-4 ml-1 text-emerald-600" />}
+                    <span className="text-zinc-700">{s.text}</span>
+                    {text === s.text && <Check className="inline w-4 h-4 ml-1 text-emerald-600" />}
+                    {s.keywords.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {s.keywords.slice(0, 2).map((k) => (
+                          <span key={k} className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">#{k}</span>
+                        ))}
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -243,13 +291,6 @@ function PublicReview() {
                   <ExternalLink className="w-4 h-4" /> Go now
                 </a>
               </div>
-              {couponCode && (
-                <div className="mt-4 rounded-xl border-2 border-dashed border-[#c9a227] bg-[#fdf6ef] p-3">
-                  <div className="text-[11px] font-bold uppercase text-zinc-500">Your reward</div>
-                  <div className="font-black text-xl tracking-wider">{couponCode}</div>
-                  <div className="text-xs text-zinc-600">10% OFF on your next visit</div>
-                </div>
-              )}
             </div>
           )}
 
@@ -262,13 +303,6 @@ function PublicReview() {
               <p className="mt-1 text-sm text-zinc-600">
                 {rating <= 3 ? "The owner has received your feedback privately and will get in touch." : "Your review has been saved."}
               </p>
-              {couponCode && (
-                <div className="mt-4 rounded-xl border-2 border-dashed border-[#c9a227] bg-[#fdf6ef] p-3">
-                  <div className="text-[11px] font-bold uppercase text-zinc-500">Your reward</div>
-                  <div className="font-black text-xl tracking-wider">{couponCode}</div>
-                  <div className="text-xs text-zinc-600">10% OFF on your next visit</div>
-                </div>
-              )}
             </div>
           )}
         </div>

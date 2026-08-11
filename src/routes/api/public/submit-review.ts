@@ -56,23 +56,13 @@ export const Route = createFileRoute("/api/public/submit-review")({
           return new Response(JSON.stringify({ error: "Could not save review" }), { status: 500 });
         }
 
-        let couponCode: string | null = null;
-        if (isPositive) {
-          couponCode = "IF" + Math.random().toString(36).slice(2, 6).toUpperCase();
-          await supabaseAdmin.from("coupons").insert({
-            business_id: biz.id,
-            code: couponCode,
-            discount: "10% OFF",
-          });
-        }
-
         if (customer_phone) {
           await supabaseAdmin.from("whatsapp_logs").insert({
             business_id: biz.id,
             phone: customer_phone,
-            message_type: isPositive ? "thankyou_coupon" : "negative_private",
+            message_type: isPositive ? "thankyou" : "negative_private",
             message_text: isPositive
-              ? `Thank you! Use ${couponCode} for 10% OFF at ${biz.name}.`
+              ? `Thank you for reviewing ${biz.name}!`
               : `Owner will contact you about your feedback for ${biz.name}.`,
           });
         }
@@ -83,7 +73,6 @@ export const Route = createFileRoute("/api/public/submit-review")({
         return new Response(
           JSON.stringify({
             ok: true,
-            couponCode,
             gmb_link: isPositive ? biz.gmb_link : null,
           }),
           { headers: { "content-type": "application/json" } },

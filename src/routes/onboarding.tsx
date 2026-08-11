@@ -2,10 +2,11 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { searchPlaces, getPlaceDetails, type PlaceSummary, type PlaceDetails } from "@/lib/places.functions";
+import { getPlaceDetails, type PlaceDetails, type PlaceSuggestion } from "@/lib/places.functions";
+import { PlaceSearchInput } from "@/components/PlaceSearchInput";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
-import { Check, ArrowRight, Download, Search, Star, MapPin } from "lucide-react";
+import { Check, ArrowRight, Download, Star } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -38,7 +39,6 @@ function slugify(s: string) {
 
 function Onboarding() {
   const nav = useNavigate();
-  const search = useServerFn(searchPlaces);
   const details = useServerFn(getPlaceDetails);
 
   const [step, setStep] = useState(1);
@@ -47,8 +47,6 @@ function Onboarding() {
 
   // Search state
   const [q, setQ] = useState("");
-  const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState<PlaceSummary[]>([]);
   const [selected, setSelected] = useState<PlaceDetails | null>(null);
 
   const [form, setForm] = useState({
@@ -68,30 +66,7 @@ function Onboarding() {
 
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/r/${form.slug || "your-shop"}` : "";
 
-  const runSearch = async () => {
-    setErrorBanner(null);
-    if (q.trim().length < 2) {
-      setErrorBanner("Type at least 2 letters of your business name, then search again. Add city/area for better Google results.");
-      return;
-    }
-    setSearching(true);
-    try {
-      const res = await search({ data: { query: q } });
-      setResults(res.results);
-      if (res.results.length === 0) {
-        setErrorBanner("No matching Google business found. Try business name + city, or open 'Enter manually' below.");
-        toast.info("No results. Try a more specific search.");
-      }
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Search failed";
-      setErrorBanner(`${message}. Check that the Google Maps API key is active, Places API is enabled, and try again.`);
-      toast.error(message);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const pickPlace = async (p: PlaceSummary) => {
+  const pickPlace = async (p: PlaceSuggestion) => {
     setBusy(true);
     setErrorBanner(null);
     try {
@@ -126,7 +101,7 @@ function Onboarding() {
     setErrorBanner(null);
     if (!form.name.trim()) { setErrorBanner("Business name is required. Search and select your Google business, or enter it manually."); toast.error("Business name is required"); setStep(1); return; }
     if (!form.slug.trim()) { setErrorBanner("Public URL slug is required. Add a short link like your-shop-name."); toast.error("Public URL slug is required"); setStep(2); return; }
-    if (!form.phone.trim()) { setErrorBanner("WhatsApp phone is required so review automation and coupon messages can work."); toast.error("WhatsApp phone is required"); setStep(2); return; }
+    if (!form.phone.trim()) { setErrorBanner("WhatsApp phone is required so review automation and WhatsApp messages can work."); toast.error("WhatsApp phone is required"); setStep(2); return; }
     setBusy(true);
     try {
       const { data: u, error: uErr } = await supabase.auth.getUser();
@@ -189,54 +164,20 @@ function Onboarding() {
           {step === 1 && (
             <>
               <h1 className="font-black text-2xl">Find your business on Google</h1>
-              <p className="text-sm text-zinc-500 mt-1">Search once — we auto-fill name, address, phone, photos, and reviews.</p>
+              <p className="text-sm text-zinc-500 mt-1">Start typing — pick your business from the suggestions and we auto-fill everything.</p>
               <div className="mt-5">
-                <div className="flex items-center rounded-lg border border-black/15 overflow-hidden">
-                  <Search className="w-4 h-4 ml-3 text-zinc-400" />
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } }}
-                    placeholder="Rakesh Tea Stall, Visavadar"
-                    className="flex-1 px-3 h-11 text-sm outline-none"
-                  />
-                  <button onClick={runSearch} disabled={searching || q.trim().length < 2}
-                    className="h-11 px-4 bg-black text-white text-sm font-bold disabled:opacity-50">
-                    {searching ? "…" : "Search"}
-                  </button>
-                </div>
-
-                {results.length > 0 && (
-                  <div className="mt-3 space-y-2 max-h-72 overflow-auto">
-                    {results.map((r) => {
-                      const isSel = selected?.place_id === r.place_id;
-                      return (
-                        <button
-                          key={r.place_id}
-                          onClick={() => pickPlace(r)}
-                          disabled={busy}
-                          className={"w-full text-left p-3 rounded-lg border-2 transition disabled:opacity-60 " +
-                            (isSel ? "border-black bg-zinc-50" : "border-zinc-200 hover:border-zinc-400")}
-                        >
-                          <div className="font-semibold text-sm">{r.name}</div>
-                          <div className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3" /> {r.address}
-                          </div>
-                          {typeof r.rating === "number" && (
-                            <div className="text-xs mt-1 flex items-center gap-1 text-amber-600">
-                              <Star className="w-3 h-3 fill-current" /> {r.rating.toFixed(1)}
-                              <span className="text-zinc-400">({r.user_rating_count ?? 0} reviews)</span>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                <PlaceSearchInput
+                  value={q}
+                  onValueChange={setQ}
+                  disabled={busy}
+                  placeholder="Rakesh Tea Stall, Visavadar"
+                  onSelect={pickPlace}
+                />
 
                 {selected && (
-                  <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
-                    ✓ {selected.name} loaded — {selected.user_rating_count ?? 0} Google reviews, {selected.rating?.toFixed(1) ?? "—"}★
+                  <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-1.5">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    {selected.name} loaded — {selected.user_rating_count ?? 0} Google reviews, {selected.rating?.toFixed(1) ?? "—"}★
                   </div>
                 )}
 

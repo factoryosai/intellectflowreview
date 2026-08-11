@@ -18,7 +18,6 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAiReplyRouteImport } from './routes/_authenticated/ai-reply'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedCompetitorsRouteImport } from './routes/_authenticated/competitors'
-import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedGmbRouteImport } from './routes/_authenticated/gmb'
 import { Route as AuthenticatedQrRouteImport } from './routes/_authenticated/qr'
@@ -75,11 +74,6 @@ const AuthenticatedCompetitorsRoute =
     path: '/competitors',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCouponsRoute = AuthenticatedCouponsRouteImport.update({
-  id: '/coupons',
-  path: '/coupons',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -140,7 +134,6 @@ export interface FileRoutesByFullPath {
   '/ai-reply': typeof AuthenticatedAiReplyRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/competitors': typeof AuthenticatedCompetitorsRoute
-  '/coupons': typeof AuthenticatedCouponsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/gmb': typeof AuthenticatedGmbRoute
   '/qr': typeof AuthenticatedQrRoute
@@ -161,7 +154,6 @@ export interface FileRoutesByTo {
   '/ai-reply': typeof AuthenticatedAiReplyRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/competitors': typeof AuthenticatedCompetitorsRoute
-  '/coupons': typeof AuthenticatedCouponsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/gmb': typeof AuthenticatedGmbRoute
   '/qr': typeof AuthenticatedQrRoute
@@ -184,7 +176,6 @@ export interface FileRoutesById {
   '/_authenticated/ai-reply': typeof AuthenticatedAiReplyRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/competitors': typeof AuthenticatedCompetitorsRoute
-  '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/gmb': typeof AuthenticatedGmbRoute
   '/_authenticated/qr': typeof AuthenticatedQrRoute
@@ -207,7 +198,6 @@ export interface FileRouteTypes {
     | '/ai-reply'
     | '/billing'
     | '/competitors'
-    | '/coupons'
     | '/dashboard'
     | '/gmb'
     | '/qr'
@@ -228,7 +218,6 @@ export interface FileRouteTypes {
     | '/ai-reply'
     | '/billing'
     | '/competitors'
-    | '/coupons'
     | '/dashboard'
     | '/gmb'
     | '/qr'
@@ -250,7 +239,6 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-reply'
     | '/_authenticated/billing'
     | '/_authenticated/competitors'
-    | '/_authenticated/coupons'
     | '/_authenticated/dashboard'
     | '/_authenticated/gmb'
     | '/_authenticated/qr'
@@ -338,13 +326,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompetitorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/coupons': {
-      id: '/_authenticated/coupons'
-      path: '/coupons'
-      fullPath: '/coupons'
-      preLoaderRoute: typeof AuthenticatedCouponsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -423,7 +404,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiReplyRoute: typeof AuthenticatedAiReplyRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCompetitorsRoute: typeof AuthenticatedCompetitorsRoute
-  AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGmbRoute: typeof AuthenticatedGmbRoute
   AuthenticatedQrRoute: typeof AuthenticatedQrRoute
@@ -438,7 +418,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiReplyRoute: AuthenticatedAiReplyRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCompetitorsRoute: AuthenticatedCompetitorsRoute,
-  AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGmbRoute: AuthenticatedGmbRoute,
   AuthenticatedQrRoute: AuthenticatedQrRoute,
