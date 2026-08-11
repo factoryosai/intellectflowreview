@@ -22,29 +22,36 @@ async function callAI(system: string, user: string) {
   return json.choices?.[0]?.message?.content ?? "";
 }
 
-// AI Writer — 4 review suggestions for the customer
+// AI Writer — short review suggestions, each with 2 relevant SEO keywords
 export const aiWriter = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) =>
     z.object({
       rating: z.number().min(1).max(5),
       businessName: z.string().min(1).max(120),
       businessType: z.string().default("shop"),
+      businessCity: z.string().max(120).optional(),
       businessDescription: z.string().max(2000).optional(),
+      count: z.number().min(1).max(8).default(5),
     }).parse(raw),
   )
   .handler(async ({ data }) => {
-    const system = `You write short, authentic Google reviews for small Indian businesses. Always return STRICT JSON only, no markdown fences.`;
-    const user = `Business: ${data.businessName} (${data.businessType})
+    const system = `You write SHORT, natural Google reviews for small Indian businesses. Always return STRICT JSON only, no markdown fences.`;
+    const user = `Business: ${data.businessName} (${data.businessType})${data.businessCity ? ` in ${data.businessCity}` : ""}
 ${data.businessDescription ? `About: ${data.businessDescription}\n` : ""}Rating: ${data.rating}/5
 
-Return JSON: { "suggestions": [ {"lang":"Gujarati","text":"..."}, {"lang":"Hinglish","text":"..."}, {"lang":"English","text":"..."}, {"lang":"Professional","text":"..."} ] }
-Each text about 20-25 words, warm and specific to what the business does.`;
+Write ${data.count} DIFFERENT review options. Rules:
+- Each review is SHORT: 12-20 words max, one or two sentences.
+- Each review must naturally include exactly 2 relevant local-SEO keywords (e.g. service/product + city or "${data.businessType}").
+- Sound like a real customer, no hashtags, no emojis, no quotes around the text.
+- Mix languages: at least one Gujarati, one Hinglish, rest English.
+
+Return JSON: { "suggestions": [ {"lang":"English","text":"...","keywords":["...","..."]} ] }`;
     const raw = await callAI(system, user);
     try {
       const cleaned = raw.replace(/^```json\s*|\s*```$/g, "").trim();
-      return JSON.parse(cleaned) as { suggestions: { lang: string; text: string }[] };
+      return JSON.parse(cleaned) as { suggestions: { lang: string; text: string; keywords?: string[] }[] };
     } catch {
-      return { suggestions: [{ lang: "English", text: raw.slice(0, 200) }] };
+      return { suggestions: [{ lang: "English", text: raw.slice(0, 200), keywords: [] }] };
     }
   });
 
