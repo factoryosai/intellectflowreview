@@ -4,10 +4,16 @@ import { z } from "zod";
 const BASE = "https://places.googleapis.com/v1";
 
 function key() {
-  const k = process.env.GOOGLE_API_KEY;
+  const k = process.env.GOOGLE_API_KEY || process.env.GOOGLE_ANALYTICS_API_KEY;
   if (!k) throw new Error("Missing GOOGLE_API_KEY");
   return k;
 }
+
+export type PlaceSuggestion = {
+  place_id: string;
+  primary: string;
+  secondary: string;
+};
 
 export type PlaceSummary = {
   place_id: string;
