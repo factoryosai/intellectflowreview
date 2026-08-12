@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyBusiness } from "@/lib/queries";
 import { getPlaceDetails } from "@/lib/places.functions";
 import { aiReply } from "@/lib/ai.functions";
-import { Star, Loader2, RefreshCw, ExternalLink, Copy, Sparkles } from "lucide-react";
+import { Star, Loader2, RefreshCw, ExternalLink, Sparkles } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/reviews")({
@@ -170,10 +170,10 @@ function AiReplyBox({
 }) {
   const gen = useServerFn(aiReply);
   const [busy, setBusy] = useState(false);
-  const [reply, setReply] = useState("");
 
-  const generate = async () => {
+  const handleReply = async () => {
     setBusy(true);
+    const win = window.open("", "_blank");
     try {
       const res = await gen({
         data: {
@@ -185,8 +185,13 @@ function AiReplyBox({
       });
       const first = res.replies?.[0]?.text ?? "";
       if (!first) throw new Error("No reply generated");
-      setReply(first);
+      await navigator.clipboard.writeText(first).catch(() => {});
+      toast.success("Reply copied — paste it on Google");
+      const url = mapsUri || "https://business.google.com/reviews";
+      if (win) win.location.href = url;
+      else window.open(url, "_blank");
     } catch (e) {
+      win?.close();
       toast.error(e instanceof Error ? e.message : "Could not generate a reply");
     } finally {
       setBusy(false);
@@ -194,54 +199,14 @@ function AiReplyBox({
   };
 
   return (
-    <div className="mt-3 rounded-xl border border-black/10 bg-[#faf8f2] p-3">
-      {!reply ? (
-        <button
-          onClick={generate}
-          disabled={busy}
-          className="h-9 px-3 rounded-lg bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
-        >
-          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-          Generate AI Reply
-        </button>
-      ) : (
-        <>
-          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">AI reply suggestion</div>
-          <textarea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            className="w-full min-h-[80px] rounded-lg border border-black/15 bg-white px-3 py-2 text-sm"
-          />
-          <div className="mt-2 flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => { navigator.clipboard.writeText(reply); toast.success("Reply copied"); }}
-              className="h-9 px-3 rounded-lg bg-black text-white text-xs font-bold inline-flex items-center gap-1.5"
-            >
-              <Copy className="w-3.5 h-3.5" /> Copy Reply
-            </button>
-            {mapsUri && (
-              <a
-                href={mapsUri}
-                target="_blank"
-                rel="noreferrer"
-                className="h-9 px-3 rounded-lg border border-black/15 bg-white text-xs font-bold inline-flex items-center gap-1.5"
-              >
-                <ExternalLink className="w-3.5 h-3.5" /> Open on Google
-              </a>
-            )}
-            <button
-              onClick={generate}
-              disabled={busy}
-              className="h-9 px-3 rounded-lg border border-black/15 bg-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
-            >
-              {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} Regenerate
-            </button>
-          </div>
-          <p className="mt-2 text-[11px] text-zinc-500">
-            Copy this reply and paste it on Google — find {review.author}'s review on your profile and reply there.
-          </p>
-        </>
-      )}
+    <div className="mt-3">
+      <button
+        onClick={handleReply}
+        disabled={busy}
+        className="h-9 px-4 rounded-lg bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
+      >
+        {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} Reply
+      </button>
     </div>
   );
 }

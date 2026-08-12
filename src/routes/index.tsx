@@ -248,16 +248,6 @@ function Landing() {
           />
         </div>
 
-        {/* Founder banner */}
-        <div className="mt-8 rounded-2xl bg-black text-white p-6 text-center">
-          <div className="text-xs font-bold tracking-widest text-yellow-400 uppercase">Founder Special</div>
-          <div className="mt-2 font-black text-lg md:text-xl">
-            All plans include a Standee — Starter Rs 1.5k • Growth Rs 3k • Pro Premium Rs 4.5k FREE
-          </div>
-          <div className="mt-2 text-sm text-white/70">
-            intellectflowteam@gmail.com • Visavadar, Gujarat
-          </div>
-        </div>
       </section>
 
       {/* FOOTER */}
@@ -268,7 +258,7 @@ function Landing() {
             <span className="font-black tracking-tight">IntellectFlow</span>
           </div>
           <div className="text-xs text-zinc-500">
-            © 2025 IntellectFlow.in • Made in Visavadar, Gujarat
+            © 2025 IntellectFlow.in
           </div>
           <div className="flex gap-4 text-xs text-zinc-500">
             <Link to="/" className="hover:text-black">Privacy</Link>
