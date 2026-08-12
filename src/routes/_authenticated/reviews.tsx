@@ -2,10 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyBusiness } from "@/lib/queries";
 import { getPlaceDetails } from "@/lib/places.functions";
-import { Star, Loader2, RefreshCw, ExternalLink } from "lucide-react";
+import { aiReply } from "@/lib/ai.functions";
+import { Star, Loader2, RefreshCw, ExternalLink, Copy, Sparkles } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/reviews")({
   head: () => ({
