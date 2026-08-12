@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyBusiness } from "@/lib/queries";
 import { getPlaceDetails } from "@/lib/places.functions";
 import { aiReply } from "@/lib/ai.functions";
-import { Star, Loader2, RefreshCw, ExternalLink, Copy, Sparkles } from "lucide-react";
+import { Star, Loader2, RefreshCw, ExternalLink, Sparkles } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/reviews")({
