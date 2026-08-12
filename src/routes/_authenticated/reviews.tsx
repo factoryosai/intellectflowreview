@@ -2,10 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyBusiness } from "@/lib/queries";
 import { getPlaceDetails } from "@/lib/places.functions";
-import { Star, Loader2, RefreshCw, ExternalLink } from "lucide-react";
+import { aiReply } from "@/lib/ai.functions";
+import { Star, Loader2, RefreshCw, ExternalLink, Copy, Sparkles } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/reviews")({
   head: () => ({
@@ -48,7 +51,7 @@ function Reviews() {
         </div>
         {tab === "google" && biz?.place_id && (
           <button onClick={() => google.refetch()} className="h-9 px-3 rounded-lg border border-black/15 bg-white text-sm font-semibold inline-flex items-center gap-1.5">
-            <RefreshCw className={"w-4 h-4 " + (google.isFetching ? "animate-spin" : "")} /> Refresh
+            <RefreshCw className={"w-4 h-4 " + (google.isFetching ? "animate-spin" : "")} /> Refresh Reviews
           </button>
         )}
       </div>
@@ -108,12 +111,22 @@ function Reviews() {
                         <span className="font-semibold text-sm">{r.author}</span>
                         <span className="flex">{Array.from({ length: Math.round(r.rating) }).map((_, k) => <Star key={k} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}</span>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">GOOGLE</span>
+                        {r.rating > 0 && r.rating <= 2 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700">NEEDS ATTENTION</span>
+                        )}
                       </div>
                       <p className="text-sm text-zinc-600 mt-1">{r.text}</p>
                       <div className="text-[11px] text-zinc-400 mt-1">{r.time ? new Date(r.time).toLocaleDateString() : ""}</div>
+                      <AiReplyBox
+                        review={r}
+                        businessName={biz?.name ?? undefined}
+                        businessDescription={(biz as any)?.description || undefined}
+                        mapsUri={google.data.google_maps_uri}
+                      />
                     </div>
                   </div>
                 ))}
+
               </div>
             </>
           )}
@@ -139,6 +152,95 @@ function Reviews() {
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+function AiReplyBox({
+  review,
+  businessName,
+  businessDescription,
+  mapsUri,
+}: {
+  review: { author: string; rating: number; text: string; time: string };
+  businessName?: string;
+  businessDescription?: string;
+  mapsUri?: string;
+}) {
+  const gen = useServerFn(aiReply);
+  const [busy, setBusy] = useState(false);
+  const [reply, setReply] = useState("");
+
+  const generate = async () => {
+    setBusy(true);
+    try {
+      const res = await gen({
+        data: {
+          reviewText: `Reviewer name: ${review.author}. Review: ${review.text || "(no text, rating only)"}`,
+          rating: Math.max(1, Math.min(5, Math.round(review.rating) || 5)),
+          businessName,
+          businessDescription,
+        },
+      });
+      const first = res.replies?.[0]?.text ?? "";
+      if (!first) throw new Error("No reply generated");
+      setReply(first);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not generate a reply");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 rounded-xl border border-black/10 bg-[#faf8f2] p-3">
+      {!reply ? (
+        <button
+          onClick={generate}
+          disabled={busy}
+          className="h-9 px-3 rounded-lg bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+          Generate AI Reply
+        </button>
+      ) : (
+        <>
+          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">AI reply suggestion</div>
+          <textarea
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            className="w-full min-h-[80px] rounded-lg border border-black/15 bg-white px-3 py-2 text-sm"
+          />
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => { navigator.clipboard.writeText(reply); toast.success("Reply copied"); }}
+              className="h-9 px-3 rounded-lg bg-black text-white text-xs font-bold inline-flex items-center gap-1.5"
+            >
+              <Copy className="w-3.5 h-3.5" /> Copy Reply
+            </button>
+            {mapsUri && (
+              <a
+                href={mapsUri}
+                target="_blank"
+                rel="noreferrer"
+                className="h-9 px-3 rounded-lg border border-black/15 bg-white text-xs font-bold inline-flex items-center gap-1.5"
+              >
+                <ExternalLink className="w-3.5 h-3.5" /> Open on Google
+              </a>
+            )}
+            <button
+              onClick={generate}
+              disabled={busy}
+              className="h-9 px-3 rounded-lg border border-black/15 bg-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
+            >
+              {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} Regenerate
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] text-zinc-500">
+            Copy this reply and paste it on Google — find {review.author}'s review on your profile and reply there.
+          </p>
+        </>
       )}
     </div>
   );
