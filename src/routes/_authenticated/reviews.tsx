@@ -111,12 +111,22 @@ function Reviews() {
                         <span className="font-semibold text-sm">{r.author}</span>
                         <span className="flex">{Array.from({ length: Math.round(r.rating) }).map((_, k) => <Star key={k} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}</span>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">GOOGLE</span>
+                        {r.rating > 0 && r.rating <= 2 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700">NEEDS ATTENTION</span>
+                        )}
                       </div>
                       <p className="text-sm text-zinc-600 mt-1">{r.text}</p>
                       <div className="text-[11px] text-zinc-400 mt-1">{r.time ? new Date(r.time).toLocaleDateString() : ""}</div>
+                      <AiReplyBox
+                        review={r}
+                        businessName={biz?.name ?? undefined}
+                        businessDescription={(biz as any)?.description || undefined}
+                        mapsUri={google.data.google_maps_uri}
+                      />
                     </div>
                   </div>
                 ))}
+
               </div>
             </>
           )}
