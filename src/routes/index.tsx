@@ -152,30 +152,25 @@ function Landing() {
 
       {/* FEATURES */}
       <section className="max-w-[1000px] mx-auto px-4 md:px-6 py-16">
-        <h2 className="text-center font-black text-2xl md:text-3xl tracking-tight">
+        <h2 className="text-center font-black text-2xl md:text-4xl tracking-tight">
           8 tools. <span className="text-gradient-purple">One price.</span>
         </h2>
-        <p className="text-center text-zinc-600 mt-2 text-sm md:text-base">Rs 55,500/mo market value at Rs 299/mo</p>
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <p className="text-center text-zinc-600 mt-2 text-sm md:text-base font-medium">Rs 55,500/mo market value at Rs 299/mo</p>
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { icon: QrCode, title: "QR + /r/slug", value: "Rs 1k", desc: "Custom slug for your shop" },
-            { icon: Sparkles, title: "AI Writer", value: "Rs 3k/mo", desc: "Gujarati Hinglish English" },
-            { icon: Shield, title: "Negative Filter", value: "Rs 7k/mo", desc: "1-2 star private to WhatsApp" },
-            { icon: Star, title: "Live Google Reviews", value: "Rs 4k/mo", desc: "See new reviews instantly" },
-            { icon: MessageSquare, title: "Reviews Inbox", value: "Rs 5k/mo", desc: "All reviews one place" },
-            { icon: Sparkles, title: "AI Reply", value: "Rs 5k/mo", desc: "Instant 3 variants" },
-            { icon: TrendingUp, title: "GMB Manager", value: "Rs 8k/mo", desc: "Auto posts + Q&A" },
-            { icon: Gift, title: "Standee FREE", value: "Rs 1.5k FREE", desc: "Each plan gets one" },
+            { icon: Sparkles, title: "AI Review Writer", desc: "4 suggestions: Gujarati, Hinglish, English, Pro." },
+            { icon: MessageSquare, title: "Negative Filter", desc: "1-2 stars go private via WhatsApp." },
+            { icon: Star, title: "Live Google Reviews", desc: "New reviews sync automatically." },
+            { icon: TrendingUp, title: "GMB Post + Image", desc: "Festival & offer posts auto-generated." },
+            { icon: Shield, title: "Competitor SWOT", desc: "Track 2 nearby, weekly analysis." },
+            { icon: QrCode, title: "Best Time to Ask", desc: "AI-picked hour with highest 5★ chance." },
+            { icon: Gift, title: "Auto FAQs", desc: "Generated from your business description." },
+            { icon: ArrowRight, title: "Weekly PDF Report", desc: "Ratings, sentiment, action items." },
           ].map((f) => (
-            <div key={f.title} className="bg-white rounded-xl border border-black/10 p-4 hover:shadow-md transition">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <f.icon className="w-4 h-4 text-zinc-500" />
-                  <span className="font-bold text-sm">{f.title}</span>
-                </div>
-                <span className="text-[10px] font-bold bg-black text-white px-1.5 py-0.5 rounded">{f.value}</span>
-              </div>
-              <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{f.desc}</p>
+            <div key={f.title} className="bg-white rounded-2xl border border-black/10 p-5 hover:shadow-md transition">
+              <f.icon className="w-5 h-5 text-zinc-800" />
+              <div className="mt-3 font-black text-base tracking-tight">{f.title}</div>
+              <p className="mt-1 text-[13px] text-zinc-500 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -186,7 +181,7 @@ function Landing() {
         <h2 className="text-center font-black text-3xl md:text-4xl tracking-tight">
           Simple pricing. <span className="text-gradient-brand">Locked features shown clearly.</span>
         </h2>
-        <p className="text-center text-zinc-600 mt-3 text-sm md:text-base">
+        <p className="text-center text-zinc-600 mt-3 text-sm md:text-base font-medium">
           Standee always FREE • No hidden fees • Cancel anytime
         </p>
 
@@ -195,6 +190,7 @@ function Landing() {
             <PlanCard key={p.id} plan={p} />
           ))}
         </div>
+
 
         <div className="mt-6 rounded-2xl bg-black text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="font-bold text-sm md:text-base">
