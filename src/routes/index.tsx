@@ -288,12 +288,13 @@ function Landing() {
   );
 }
 
-function PlanCard({
-  name, price, marketValue, popular, dark, cta, features, onClick,
-}: {
-  name: string; price: string; marketValue: string; popular: boolean; dark: boolean; cta: string;
-  features: string[]; onClick: () => void;
-}) {
+const ALL_FEATURES: string[] = Array.from(
+  new Set(PLANS.flatMap((p) => p.features)),
+);
+
+function PlanCard({ plan }: { plan: Plan }) {
+  const dark = !!plan.popular;
+  const included = new Set(plan.features);
   return (
     <div
       className={[
@@ -303,40 +304,65 @@ function PlanCard({
           : "bg-white border-2 border-zinc-200",
       ].join(" ")}
     >
-      {popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-black text-[11px] font-black tracking-wide px-3 py-1 rounded-full border border-black/10 shadow">
-          MOST POPULAR • 80%
+      {plan.popular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a227] text-black text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
+          MOST POPULAR
         </div>
       )}
-      <div className="text-sm font-bold uppercase tracking-wider opacity-70">{name}</div>
+      {plan.id === "pro" && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
+          BEST VALUE
+        </div>
+      )}
+      <div className="text-sm font-bold uppercase tracking-wider opacity-70">{plan.label}</div>
       <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-4xl font-black">Rs {price}</span>
+        <span className="text-4xl font-black">₹{plan.price}</span>
         <span className={dark ? "text-white/60 text-sm" : "text-zinc-500 text-sm"}>/mo</span>
       </div>
       <div className={"mt-1 text-xs " + (dark ? "text-white/60" : "text-zinc-500")}>
-        Market value <span className="line-through">{marketValue}</span>
+        Market value <span className="line-through">{plan.market}</span>
       </div>
 
-      <ul className="mt-5 space-y-2.5 text-sm flex-1">
-        {features.map((f) => (
-          <li key={f} className="flex items-start gap-2">
-            <Check className={"w-4 h-4 shrink-0 mt-0.5 " + (dark ? "text-emerald-400" : "text-emerald-600")} />
-            <span className={dark ? "text-white/90" : "text-zinc-700"}>{f}</span>
-          </li>
-        ))}
+      <ul className="mt-5 space-y-2 text-sm flex-1">
+        {ALL_FEATURES.map((f) => {
+          const on = included.has(f);
+          return (
+            <li key={f} className="flex items-start gap-2">
+              {on ? (
+                <Check className={"w-4 h-4 shrink-0 mt-0.5 " + (dark ? "text-emerald-400" : "text-emerald-600")} />
+              ) : (
+                <Lock className={"w-3.5 h-3.5 shrink-0 mt-1 " + (dark ? "text-white/30" : "text-zinc-300")} />
+              )}
+              <span
+                className={
+                  on
+                    ? dark
+                      ? "text-white/90"
+                      : "text-zinc-700"
+                    : dark
+                      ? "text-white/35"
+                      : "text-zinc-400"
+                }
+              >
+                {f}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
-      <button
-        onClick={onClick}
+      <Link
+        to="/auth"
         className={[
-          "mt-6 h-12 rounded-xl font-bold text-sm transition",
+          "mt-6 h-12 rounded-xl font-bold text-sm transition grid place-items-center",
           dark
             ? "bg-white text-black hover:bg-zinc-100"
-            : "bg-white text-black border-2 border-black hover:bg-black hover:text-white",
+            : "bg-black text-white hover:bg-zinc-800",
         ].join(" ")}
       >
-        {cta}
-      </button>
+        Get Started at ₹{plan.price}/mo
+      </Link>
     </div>
   );
 }
+
