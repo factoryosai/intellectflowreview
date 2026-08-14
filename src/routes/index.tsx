@@ -346,9 +346,3 @@ function PlanCard({ plan }: { plan: Plan }) {
   );
 }
 
-        Get Started at ₹{plan.price}/mo
-      </Link>
-    </div>
-  );
-}
-
