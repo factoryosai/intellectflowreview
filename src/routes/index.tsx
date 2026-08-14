@@ -152,30 +152,25 @@ function Landing() {
 
       {/* FEATURES */}
       <section className="max-w-[1000px] mx-auto px-4 md:px-6 py-16">
-        <h2 className="text-center font-black text-2xl md:text-3xl tracking-tight">
+        <h2 className="text-center font-black text-2xl md:text-4xl tracking-tight">
           8 tools. <span className="text-gradient-purple">One price.</span>
         </h2>
-        <p className="text-center text-zinc-600 mt-2 text-sm md:text-base">Rs 55,500/mo market value at Rs 299/mo</p>
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <p className="text-center text-zinc-600 mt-2 text-sm md:text-base font-medium">Rs 55,500/mo market value at Rs 299/mo</p>
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { icon: QrCode, title: "QR + /r/slug", value: "Rs 1k", desc: "Custom slug for your shop" },
-            { icon: Sparkles, title: "AI Writer", value: "Rs 3k/mo", desc: "Gujarati Hinglish English" },
-            { icon: Shield, title: "Negative Filter", value: "Rs 7k/mo", desc: "1-2 star private to WhatsApp" },
-            { icon: Star, title: "Live Google Reviews", value: "Rs 4k/mo", desc: "See new reviews instantly" },
-            { icon: MessageSquare, title: "Reviews Inbox", value: "Rs 5k/mo", desc: "All reviews one place" },
-            { icon: Sparkles, title: "AI Reply", value: "Rs 5k/mo", desc: "Instant 3 variants" },
-            { icon: TrendingUp, title: "GMB Manager", value: "Rs 8k/mo", desc: "Auto posts + Q&A" },
-            { icon: Gift, title: "Standee FREE", value: "Rs 1.5k FREE", desc: "Each plan gets one" },
+            { icon: Sparkles, title: "AI Review Writer", desc: "4 suggestions: Gujarati, Hinglish, English, Pro." },
+            { icon: MessageSquare, title: "Negative Filter", desc: "1-2 stars go private via WhatsApp." },
+            { icon: Star, title: "Live Google Reviews", desc: "New reviews sync automatically." },
+            { icon: TrendingUp, title: "GMB Post + Image", desc: "Festival & offer posts auto-generated." },
+            { icon: Shield, title: "Competitor SWOT", desc: "Track 2 nearby, weekly analysis." },
+            { icon: QrCode, title: "Best Time to Ask", desc: "AI-picked hour with highest 5★ chance." },
+            { icon: Gift, title: "Auto FAQs", desc: "Generated from your business description." },
+            { icon: ArrowRight, title: "Weekly PDF Report", desc: "Ratings, sentiment, action items." },
           ].map((f) => (
-            <div key={f.title} className="bg-white rounded-xl border border-black/10 p-4 hover:shadow-md transition">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <f.icon className="w-4 h-4 text-zinc-500" />
-                  <span className="font-bold text-sm">{f.title}</span>
-                </div>
-                <span className="text-[10px] font-bold bg-black text-white px-1.5 py-0.5 rounded">{f.value}</span>
-              </div>
-              <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{f.desc}</p>
+            <div key={f.title} className="bg-white rounded-2xl border border-black/10 p-5 hover:shadow-md transition">
+              <f.icon className="w-5 h-5 text-zinc-800" />
+              <div className="mt-3 font-black text-base tracking-tight">{f.title}</div>
+              <p className="mt-1 text-[13px] text-zinc-500 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -186,7 +181,7 @@ function Landing() {
         <h2 className="text-center font-black text-3xl md:text-4xl tracking-tight">
           Simple pricing. <span className="text-gradient-brand">Locked features shown clearly.</span>
         </h2>
-        <p className="text-center text-zinc-600 mt-3 text-sm md:text-base">
+        <p className="text-center text-zinc-600 mt-3 text-sm md:text-base font-medium">
           Standee always FREE • No hidden fees • Cancel anytime
         </p>
 
@@ -195,6 +190,7 @@ function Landing() {
             <PlanCard key={p.id} plan={p} />
           ))}
         </div>
+
 
         <div className="mt-6 rounded-2xl bg-black text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="font-bold text-sm md:text-base">
@@ -291,59 +287,47 @@ const ALL_FEATURES: string[] = Array.from(
 );
 
 function PlanCard({ plan }: { plan: Plan }) {
-  const dark = !!plan.popular;
+  const dark = false;
   const included = new Set(plan.features);
   return (
     <div
       className={[
-        "relative rounded-2xl p-6 flex flex-col",
-        dark
-          ? "bg-black text-white shadow-2xl md:scale-[1.02] border border-black"
-          : "bg-white border-2 border-zinc-200",
+        "relative rounded-2xl p-6 flex flex-col bg-white",
+        plan.popular ? "border-2 border-black shadow-xl" : "border border-zinc-200 shadow-sm",
       ].join(" ")}
     >
-      {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a227] text-black text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
-          MOST POPULAR
-        </div>
-      )}
-      {plan.id === "pro" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
-          BEST VALUE
-        </div>
-      )}
-      <div className="text-sm font-bold uppercase tracking-wider opacity-70">{plan.label}</div>
-      <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-4xl font-black">₹{plan.price}</span>
-        <span className={dark ? "text-white/60 text-sm" : "text-zinc-500 text-sm"}>/mo</span>
+      <div className="flex items-center gap-2">
+        <span className="text-xl font-black tracking-tight">{plan.label}</span>
+        {plan.popular && (
+          <span className="bg-[#f5c518] text-black text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
+            POPULAR
+          </span>
+        )}
+        {plan.id === "pro" && (
+          <span className="bg-black text-white text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
+            BEST VALUE
+          </span>
+        )}
       </div>
-      <div className={"mt-1 text-xs " + (dark ? "text-white/60" : "text-zinc-500")}>
-        Market value <span className="line-through">{plan.market}</span>
+      <div className="mt-2 flex items-baseline gap-1">
+        <span className="text-[40px] leading-none font-black tracking-tight">₹{plan.price}</span>
+        <span className="text-zinc-500 text-sm font-semibold">/mo</span>
+      </div>
+      <div className="mt-1.5 text-xs text-zinc-500 font-medium">
+        Market <span className="line-through">{plan.market}</span>
       </div>
 
-      <ul className="mt-5 space-y-2 text-sm flex-1">
+      <ul className="mt-5 space-y-2 text-[13px] flex-1">
         {ALL_FEATURES.map((f) => {
           const on = included.has(f);
           return (
             <li key={f} className="flex items-start gap-2">
               {on ? (
-                <Check className={"w-4 h-4 shrink-0 mt-0.5 " + (dark ? "text-emerald-400" : "text-emerald-600")} />
+                <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
               ) : (
-                <Lock className={"w-3.5 h-3.5 shrink-0 mt-1 " + (dark ? "text-white/30" : "text-zinc-300")} />
+                <Lock className="w-3.5 h-3.5 shrink-0 mt-1 text-zinc-300" />
               )}
-              <span
-                className={
-                  on
-                    ? dark
-                      ? "text-white/90"
-                      : "text-zinc-700"
-                    : dark
-                      ? "text-white/35"
-                      : "text-zinc-400"
-                }
-              >
-                {f}
-              </span>
+              <span className={on ? "text-zinc-800 font-medium" : "text-zinc-400"}>{f}</span>
             </li>
           );
         })}
@@ -352,10 +336,8 @@ function PlanCard({ plan }: { plan: Plan }) {
       <Link
         to="/auth"
         className={[
-          "mt-6 h-12 rounded-xl font-bold text-sm transition grid place-items-center",
-          dark
-            ? "bg-white text-black hover:bg-zinc-100"
-            : "bg-black text-white hover:bg-zinc-800",
+          "mt-6 h-12 rounded-full font-bold text-sm transition grid place-items-center",
+          dark ? "" : "bg-black text-white hover:bg-zinc-800",
         ].join(" ")}
       >
         Get Started at ₹{plan.price}/mo
