@@ -30,9 +30,8 @@ function Logo({ size = 36 }: { size?: number }) {
 }
 
 function Landing() {
-  const notify = (msg: string) => toast.success(msg);
-
   return (
+
     <div className="min-h-screen" style={{ backgroundColor: "#fdf6ef" }}>
       {/* HEADER */}
       <header className="sticky top-0 z-30 backdrop-blur bg-[#fdf6ef]/80 border-b border-black/5">
