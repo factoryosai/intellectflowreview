@@ -1,10 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Star, QrCode, MessageSquare, Sparkles, Shield, Gift, TrendingUp, ArrowRight } from "lucide-react";
+import { Check, Star, QrCode, MessageSquare, Sparkles, Shield, Gift, TrendingUp, ArrowRight, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { PLANS, type Plan } from "@/lib/plans";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "IntellectFlow — QR se Google Reviews Automation for Local Shops" },
+      { name: "description", content: "QR standee se 5★ Google reviews, negative feedback private, AI reply & GMB posts. ₹55k/mo agency value at ₹299/mo. 3-day free trial." },
+      { property: "og:title", content: "IntellectFlow — QR se Google Reviews Automation" },
+      { property: "og:description", content: "Smart QR, AI review writer, AI replies, GMB posts and analytics for local businesses from ₹299/mo." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Landing,
 });
+
 
 function Logo({ size = 36 }: { size?: number }) {
   return (
