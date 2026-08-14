@@ -184,82 +184,67 @@ function Landing() {
       </section>
 
       {/* PRICING */}
-      <section className="max-w-[1080px] mx-auto px-4 md:px-6 py-16">
+      <section id="pricing" className="max-w-[1120px] mx-auto px-4 md:px-6 py-16 border-t border-black/5">
         <h2 className="text-center font-black text-3xl md:text-4xl tracking-tight">
-          Simple pricing — <span className="text-gradient-brand">Rs 55k value at Rs 299</span>
+          Simple pricing. <span className="text-gradient-brand">Locked features shown clearly.</span>
         </h2>
         <p className="text-center text-zinc-600 mt-3 text-sm md:text-base">
-          All plans include 1 Standee FREE • No hidden fees • Cancel anytime
+          Standee always FREE • No hidden fees • Cancel anytime
         </p>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-          {/* Starter */}
-          <PlanCard
-            name="Starter"
-            price="299"
-            marketValue="Rs 8k/mo"
-            popular={false}
-            dark={false}
-            cta="Start Free - Value Rs 8k/mo"
-            features={[
-              "5 AI Reply / month",
-              "1 Public /r/slug page",
-              "1 Poster design FREE",
-              "1 Standee FREE (Rs 1.5k value)",
-              "QR code + custom slug",
-              "Negative review filter",
-              "Reviews inbox",
-              "Email support",
-              "Cancel anytime",
-            ]}
-            onClick={() => notify("Starter plan checkout coming next")}
-          />
-          {/* Growth */}
-          <PlanCard
-            name="Growth"
-            price="599"
-            marketValue="Rs 25k/mo"
-            popular
-            dark
-            cta="Choose Growth - Rs 25k Value"
-            features={[
-              "Everything in Starter",
-              "50 AI Reply / mo (3 variants) — Rs 5k/mo",
-              "GMB Auto Posts 5/mo — Rs 8k/mo",
-              "WhatsApp Automation — Rs 3k/mo",
-              "Stickers 20+ designs — Rs 2k/mo",
-              "5 Public pages — Rs 5k/mo",
-              "Sentiment analysis",
-              "Poster + Standee FREE — Rs 3k",
-              "Priority WhatsApp support",
-              "80% customers choose this",
-            ]}
-            onClick={() => notify("Growth plan checkout coming next")}
-          />
-          {/* Pro */}
-          <PlanCard
-            name="Business Pro"
-            price="1299"
-            marketValue="Rs 55k+/mo"
-            popular={false}
-            dark={false}
-            cta="Go Business Pro - Rs 55k+ Value"
-            features={[
-              "Everything in Growth",
-              "Unlimited AI Reply",
-              "GMB 15 posts/mo",
-              "Q&A Insights — Rs 8k",
-              "Sentiment Pro — Rs 5k",
-              "Competitor tracking (2) — Rs 12k",
-              "Website FREE — Rs 10k",
-              "Stickers 50+ • Posters 5",
-              "Premium Standee + Table Stand FREE — Rs 4.5k",
-              "Lifetime updates",
-            ]}
-            onClick={() => notify("Pro plan checkout coming next")}
-          />
+          {PLANS.map((p) => (
+            <PlanCard key={p.id} plan={p} />
+          ))}
         </div>
 
+        <div className="mt-6 rounded-2xl bg-black text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="font-bold text-sm md:text-base">
+            Total market value ₹55,500/mo — yours at ₹299/mo
+          </div>
+          <Link to="/auth" className="h-10 px-5 rounded-full bg-white text-black font-bold text-sm inline-flex items-center gap-1.5">
+            Get Started <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="max-w-[1000px] mx-auto px-4 md:px-6 py-16 border-t border-black/5">
+        <h2 className="text-center font-black text-2xl md:text-3xl tracking-tight">
+          Setup in <span className="text-gradient-purple">10 minutes</span>
+        </h2>
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-3">
+          {[
+            { n: "1", t: "Signup + business search", d: "Type your shop name, pick it from Google suggestions." },
+            { n: "2", t: "Get QR + review page", d: "Custom /r/your-slug page with your branding." },
+            { n: "3", t: "Standee counter pe rakho", d: "Free printed standee shipped to your shop." },
+            { n: "4", t: "Reviews aana shuru", d: "5★ → Google, 1–3★ → your private inbox." },
+          ].map((s) => (
+            <div key={s.n} className="bg-white rounded-xl border border-black/10 p-4">
+              <div className="w-8 h-8 rounded-lg bg-black text-white grid place-items-center font-black text-sm">{s.n}</div>
+              <div className="mt-3 font-bold text-sm">{s.t}</div>
+              <p className="mt-1 text-xs text-zinc-500 leading-relaxed">{s.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-[820px] mx-auto px-4 md:px-6 py-16 border-t border-black/5">
+        <h2 className="text-center font-black text-2xl md:text-3xl tracking-tight">Common questions</h2>
+        <div className="mt-8 space-y-3">
+          {[
+            { q: "Free trial kitne din ka hai?", a: "3 din ka full-access free trial. Card ki zaroorat nahi — trial ke baad plan choose karein." },
+            { q: "Kya negative review Google pe jayega?", a: "Nahi. 1–3★ rating private feedback form pe jaati hai jo sirf aapko dikhti hai." },
+            { q: "Standee kitne ka hai?", a: "Har plan me 1 printed standee bilkul FREE (₹1,500 value)." },
+            { q: "Cancel kar sakte hain?", a: "Haan, kabhi bhi. Koi lock-in nahi, koi hidden charge nahi." },
+          ].map((f) => (
+            <div key={f.q} className="bg-white rounded-xl border border-black/10 p-4">
+              <div className="font-bold text-sm">{f.q}</div>
+              <p className="mt-1.5 text-sm text-zinc-600 leading-relaxed">{f.a}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* FOOTER */}
@@ -279,6 +264,7 @@ function Landing() {
           </div>
         </div>
       </footer>
+
 
       {/* MOBILE STICKY CTA */}
       <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-32px)] max-w-[360px]">
