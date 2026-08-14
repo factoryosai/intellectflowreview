@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Star, QrCode, MessageSquare, Sparkles, Shield, Gift, TrendingUp, ArrowRight, Lock } from "lucide-react";
-import { toast } from "sonner";
 import { PLANS, type Plan } from "@/lib/plans";
 
 export const Route = createFileRoute("/")({
