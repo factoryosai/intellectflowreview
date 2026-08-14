@@ -1,10 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Star, QrCode, MessageSquare, Sparkles, Shield, Gift, TrendingUp, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
+import { Check, Star, QrCode, MessageSquare, Sparkles, Shield, Gift, TrendingUp, ArrowRight, Lock } from "lucide-react";
+import { PLANS, type Plan } from "@/lib/plans";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "IntellectFlow — QR se Google Reviews Automation for Local Shops" },
+      { name: "description", content: "QR standee se 5★ Google reviews, negative feedback private, AI reply & GMB posts. ₹55k/mo agency value at ₹299/mo. 3-day free trial." },
+      { property: "og:title", content: "IntellectFlow — QR se Google Reviews Automation" },
+      { property: "og:description", content: "Smart QR, AI review writer, AI replies, GMB posts and analytics for local businesses from ₹299/mo." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Landing,
 });
+
 
 function Logo({ size = 36 }: { size?: number }) {
   return (
@@ -18,9 +29,8 @@ function Logo({ size = 36 }: { size?: number }) {
 }
 
 function Landing() {
-  const notify = (msg: string) => toast.success(msg);
-
   return (
+
     <div className="min-h-screen" style={{ backgroundColor: "#fdf6ef" }}>
       {/* HEADER */}
       <header className="sticky top-0 z-30 backdrop-blur bg-[#fdf6ef]/80 border-b border-black/5">
@@ -172,82 +182,67 @@ function Landing() {
       </section>
 
       {/* PRICING */}
-      <section className="max-w-[1080px] mx-auto px-4 md:px-6 py-16">
+      <section id="pricing" className="max-w-[1120px] mx-auto px-4 md:px-6 py-16 border-t border-black/5">
         <h2 className="text-center font-black text-3xl md:text-4xl tracking-tight">
-          Simple pricing — <span className="text-gradient-brand">Rs 55k value at Rs 299</span>
+          Simple pricing. <span className="text-gradient-brand">Locked features shown clearly.</span>
         </h2>
         <p className="text-center text-zinc-600 mt-3 text-sm md:text-base">
-          All plans include 1 Standee FREE • No hidden fees • Cancel anytime
+          Standee always FREE • No hidden fees • Cancel anytime
         </p>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-          {/* Starter */}
-          <PlanCard
-            name="Starter"
-            price="299"
-            marketValue="Rs 8k/mo"
-            popular={false}
-            dark={false}
-            cta="Start Free - Value Rs 8k/mo"
-            features={[
-              "5 AI Reply / month",
-              "1 Public /r/slug page",
-              "1 Poster design FREE",
-              "1 Standee FREE (Rs 1.5k value)",
-              "QR code + custom slug",
-              "Negative review filter",
-              "Reviews inbox",
-              "Email support",
-              "Cancel anytime",
-            ]}
-            onClick={() => notify("Starter plan checkout coming next")}
-          />
-          {/* Growth */}
-          <PlanCard
-            name="Growth"
-            price="599"
-            marketValue="Rs 25k/mo"
-            popular
-            dark
-            cta="Choose Growth - Rs 25k Value"
-            features={[
-              "Everything in Starter",
-              "50 AI Reply / mo (3 variants) — Rs 5k/mo",
-              "GMB Auto Posts 5/mo — Rs 8k/mo",
-              "WhatsApp Automation — Rs 3k/mo",
-              "Stickers 20+ designs — Rs 2k/mo",
-              "5 Public pages — Rs 5k/mo",
-              "Sentiment analysis",
-              "Poster + Standee FREE — Rs 3k",
-              "Priority WhatsApp support",
-              "80% customers choose this",
-            ]}
-            onClick={() => notify("Growth plan checkout coming next")}
-          />
-          {/* Pro */}
-          <PlanCard
-            name="Business Pro"
-            price="1299"
-            marketValue="Rs 55k+/mo"
-            popular={false}
-            dark={false}
-            cta="Go Business Pro - Rs 55k+ Value"
-            features={[
-              "Everything in Growth",
-              "Unlimited AI Reply",
-              "GMB 15 posts/mo",
-              "Q&A Insights — Rs 8k",
-              "Sentiment Pro — Rs 5k",
-              "Competitor tracking (2) — Rs 12k",
-              "Website FREE — Rs 10k",
-              "Stickers 50+ • Posters 5",
-              "Premium Standee + Table Stand FREE — Rs 4.5k",
-              "Lifetime updates",
-            ]}
-            onClick={() => notify("Pro plan checkout coming next")}
-          />
+          {PLANS.map((p) => (
+            <PlanCard key={p.id} plan={p} />
+          ))}
         </div>
 
+        <div className="mt-6 rounded-2xl bg-black text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="font-bold text-sm md:text-base">
+            Total market value ₹55,500/mo — yours at ₹299/mo
+          </div>
+          <Link to="/auth" className="h-10 px-5 rounded-full bg-white text-black font-bold text-sm inline-flex items-center gap-1.5">
+            Get Started <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="max-w-[1000px] mx-auto px-4 md:px-6 py-16 border-t border-black/5">
+        <h2 className="text-center font-black text-2xl md:text-3xl tracking-tight">
+          Setup in <span className="text-gradient-purple">10 minutes</span>
+        </h2>
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-3">
+          {[
+            { n: "1", t: "Signup + business search", d: "Type your shop name, pick it from Google suggestions." },
+            { n: "2", t: "Get QR + review page", d: "Custom /r/your-slug page with your branding." },
+            { n: "3", t: "Standee counter pe rakho", d: "Free printed standee shipped to your shop." },
+            { n: "4", t: "Reviews aana shuru", d: "5★ → Google, 1–3★ → your private inbox." },
+          ].map((s) => (
+            <div key={s.n} className="bg-white rounded-xl border border-black/10 p-4">
+              <div className="w-8 h-8 rounded-lg bg-black text-white grid place-items-center font-black text-sm">{s.n}</div>
+              <div className="mt-3 font-bold text-sm">{s.t}</div>
+              <p className="mt-1 text-xs text-zinc-500 leading-relaxed">{s.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-[820px] mx-auto px-4 md:px-6 py-16 border-t border-black/5">
+        <h2 className="text-center font-black text-2xl md:text-3xl tracking-tight">Common questions</h2>
+        <div className="mt-8 space-y-3">
+          {[
+            { q: "Free trial kitne din ka hai?", a: "3 din ka full-access free trial. Card ki zaroorat nahi — trial ke baad plan choose karein." },
+            { q: "Kya negative review Google pe jayega?", a: "Nahi. 1–3★ rating private feedback form pe jaati hai jo sirf aapko dikhti hai." },
+            { q: "Standee kitne ka hai?", a: "Har plan me 1 printed standee bilkul FREE (₹1,500 value)." },
+            { q: "Cancel kar sakte hain?", a: "Haan, kabhi bhi. Koi lock-in nahi, koi hidden charge nahi." },
+          ].map((f) => (
+            <div key={f.q} className="bg-white rounded-xl border border-black/10 p-4">
+              <div className="font-bold text-sm">{f.q}</div>
+              <p className="mt-1.5 text-sm text-zinc-600 leading-relaxed">{f.a}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* FOOTER */}
@@ -267,6 +262,7 @@ function Landing() {
           </div>
         </div>
       </footer>
+
 
       {/* MOBILE STICKY CTA */}
       <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-32px)] max-w-[360px]">
@@ -290,12 +286,13 @@ function Landing() {
   );
 }
 
-function PlanCard({
-  name, price, marketValue, popular, dark, cta, features, onClick,
-}: {
-  name: string; price: string; marketValue: string; popular: boolean; dark: boolean; cta: string;
-  features: string[]; onClick: () => void;
-}) {
+const ALL_FEATURES: string[] = Array.from(
+  new Set(PLANS.flatMap((p) => p.features)),
+);
+
+function PlanCard({ plan }: { plan: Plan }) {
+  const dark = !!plan.popular;
+  const included = new Set(plan.features);
   return (
     <div
       className={[
@@ -305,40 +302,65 @@ function PlanCard({
           : "bg-white border-2 border-zinc-200",
       ].join(" ")}
     >
-      {popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-black text-[11px] font-black tracking-wide px-3 py-1 rounded-full border border-black/10 shadow">
-          MOST POPULAR • 80%
+      {plan.popular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a227] text-black text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
+          MOST POPULAR
         </div>
       )}
-      <div className="text-sm font-bold uppercase tracking-wider opacity-70">{name}</div>
+      {plan.id === "pro" && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
+          BEST VALUE
+        </div>
+      )}
+      <div className="text-sm font-bold uppercase tracking-wider opacity-70">{plan.label}</div>
       <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-4xl font-black">Rs {price}</span>
+        <span className="text-4xl font-black">₹{plan.price}</span>
         <span className={dark ? "text-white/60 text-sm" : "text-zinc-500 text-sm"}>/mo</span>
       </div>
       <div className={"mt-1 text-xs " + (dark ? "text-white/60" : "text-zinc-500")}>
-        Market value <span className="line-through">{marketValue}</span>
+        Market value <span className="line-through">{plan.market}</span>
       </div>
 
-      <ul className="mt-5 space-y-2.5 text-sm flex-1">
-        {features.map((f) => (
-          <li key={f} className="flex items-start gap-2">
-            <Check className={"w-4 h-4 shrink-0 mt-0.5 " + (dark ? "text-emerald-400" : "text-emerald-600")} />
-            <span className={dark ? "text-white/90" : "text-zinc-700"}>{f}</span>
-          </li>
-        ))}
+      <ul className="mt-5 space-y-2 text-sm flex-1">
+        {ALL_FEATURES.map((f) => {
+          const on = included.has(f);
+          return (
+            <li key={f} className="flex items-start gap-2">
+              {on ? (
+                <Check className={"w-4 h-4 shrink-0 mt-0.5 " + (dark ? "text-emerald-400" : "text-emerald-600")} />
+              ) : (
+                <Lock className={"w-3.5 h-3.5 shrink-0 mt-1 " + (dark ? "text-white/30" : "text-zinc-300")} />
+              )}
+              <span
+                className={
+                  on
+                    ? dark
+                      ? "text-white/90"
+                      : "text-zinc-700"
+                    : dark
+                      ? "text-white/35"
+                      : "text-zinc-400"
+                }
+              >
+                {f}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
-      <button
-        onClick={onClick}
+      <Link
+        to="/auth"
         className={[
-          "mt-6 h-12 rounded-xl font-bold text-sm transition",
+          "mt-6 h-12 rounded-xl font-bold text-sm transition grid place-items-center",
           dark
             ? "bg-white text-black hover:bg-zinc-100"
-            : "bg-white text-black border-2 border-black hover:bg-black hover:text-white",
+            : "bg-black text-white hover:bg-zinc-800",
         ].join(" ")}
       >
-        {cta}
-      </button>
+        Get Started at ₹{plan.price}/mo
+      </Link>
     </div>
   );
 }
+
