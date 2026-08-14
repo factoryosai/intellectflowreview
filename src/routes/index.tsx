@@ -287,59 +287,47 @@ const ALL_FEATURES: string[] = Array.from(
 );
 
 function PlanCard({ plan }: { plan: Plan }) {
-  const dark = !!plan.popular;
+  const dark = false;
   const included = new Set(plan.features);
   return (
     <div
       className={[
-        "relative rounded-2xl p-6 flex flex-col",
-        dark
-          ? "bg-black text-white shadow-2xl md:scale-[1.02] border border-black"
-          : "bg-white border-2 border-zinc-200",
+        "relative rounded-2xl p-6 flex flex-col bg-white",
+        plan.popular ? "border-2 border-black shadow-xl" : "border border-zinc-200 shadow-sm",
       ].join(" ")}
     >
-      {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a227] text-black text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
-          MOST POPULAR
-        </div>
-      )}
-      {plan.id === "pro" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white text-[11px] font-black tracking-wide px-3 py-1 rounded-full shadow">
-          BEST VALUE
-        </div>
-      )}
-      <div className="text-sm font-bold uppercase tracking-wider opacity-70">{plan.label}</div>
-      <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-4xl font-black">₹{plan.price}</span>
-        <span className={dark ? "text-white/60 text-sm" : "text-zinc-500 text-sm"}>/mo</span>
+      <div className="flex items-center gap-2">
+        <span className="text-xl font-black tracking-tight">{plan.label}</span>
+        {plan.popular && (
+          <span className="bg-[#f5c518] text-black text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
+            POPULAR
+          </span>
+        )}
+        {plan.id === "pro" && (
+          <span className="bg-black text-white text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
+            BEST VALUE
+          </span>
+        )}
       </div>
-      <div className={"mt-1 text-xs " + (dark ? "text-white/60" : "text-zinc-500")}>
-        Market value <span className="line-through">{plan.market}</span>
+      <div className="mt-2 flex items-baseline gap-1">
+        <span className="text-[40px] leading-none font-black tracking-tight">₹{plan.price}</span>
+        <span className="text-zinc-500 text-sm font-semibold">/mo</span>
+      </div>
+      <div className="mt-1.5 text-xs text-zinc-500 font-medium">
+        Market <span className="line-through">{plan.market}</span>
       </div>
 
-      <ul className="mt-5 space-y-2 text-sm flex-1">
+      <ul className="mt-5 space-y-2 text-[13px] flex-1">
         {ALL_FEATURES.map((f) => {
           const on = included.has(f);
           return (
             <li key={f} className="flex items-start gap-2">
               {on ? (
-                <Check className={"w-4 h-4 shrink-0 mt-0.5 " + (dark ? "text-emerald-400" : "text-emerald-600")} />
+                <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
               ) : (
-                <Lock className={"w-3.5 h-3.5 shrink-0 mt-1 " + (dark ? "text-white/30" : "text-zinc-300")} />
+                <Lock className="w-3.5 h-3.5 shrink-0 mt-1 text-zinc-300" />
               )}
-              <span
-                className={
-                  on
-                    ? dark
-                      ? "text-white/90"
-                      : "text-zinc-700"
-                    : dark
-                      ? "text-white/35"
-                      : "text-zinc-400"
-                }
-              >
-                {f}
-              </span>
+              <span className={on ? "text-zinc-800 font-medium" : "text-zinc-400"}>{f}</span>
             </li>
           );
         })}
@@ -348,12 +336,16 @@ function PlanCard({ plan }: { plan: Plan }) {
       <Link
         to="/auth"
         className={[
-          "mt-6 h-12 rounded-xl font-bold text-sm transition grid place-items-center",
-          dark
-            ? "bg-white text-black hover:bg-zinc-100"
-            : "bg-black text-white hover:bg-zinc-800",
+          "mt-6 h-12 rounded-full font-bold text-sm transition grid place-items-center",
+          dark ? "" : "bg-black text-white hover:bg-zinc-800",
         ].join(" ")}
       >
+        Get Started at ₹{plan.price}/mo
+      </Link>
+    </div>
+  );
+}
+
         Get Started at ₹{plan.price}/mo
       </Link>
     </div>
