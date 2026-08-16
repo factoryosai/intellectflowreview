@@ -77,7 +77,7 @@ function Landing() {
         <div className="mt-8 flex flex-col items-center gap-3 max-w-md mx-auto">
           <Link
             to="/auth"
-            className="w-full h-[52px] rounded-xl bg-black text-white font-bold text-base shadow-xl hover:shadow-2xl hover:scale-[1.01] transition inline-flex items-center justify-center gap-2"
+            className="w-full h-[52px] rounded-xl bg-gradient-to-r from-[#f0a020] to-[#e2571f] text-white font-black text-base shadow-xl hover:shadow-2xl hover:scale-[1.01] transition inline-flex items-center justify-center gap-2"
           >
             Start at Rs 299/mo <ArrowRight className="w-4 h-4" />
           </Link>
@@ -262,10 +262,10 @@ function Landing() {
 
       {/* MOBILE STICKY CTA */}
       <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-32px)] max-w-[360px]">
-        <div className="bg-black text-white rounded-full p-1.5 flex gap-1.5 shadow-2xl">
+        <div className="bg-[#1f1b16] text-white rounded-full p-1.5 flex gap-1.5 shadow-2xl">
           <Link
             to="/auth"
-            className="flex-1 h-11 rounded-full bg-white text-black font-bold text-sm inline-flex items-center justify-center"
+            className="flex-1 h-11 rounded-full bg-gradient-to-r from-[#f0a020] to-[#e2571f] text-white font-black text-sm inline-flex items-center justify-center"
           >
             Start Rs 299
           </Link>
