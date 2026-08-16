@@ -65,14 +65,14 @@ function Billing() {
               key={p.id}
               className={[
                 "rounded-2xl border-2 p-5 bg-white relative",
-                current ? "border-[#c9a227] shadow-lg" : p.popular ? "border-black" : "border-zinc-200",
+                current ? "border-[#c9a227] shadow-lg" : p.popular ? "border-[#c9a227]" : "border-zinc-200",
               ].join(" ")}
             >
               {current && (
                 <span className="absolute -top-3 left-5 text-[10px] font-black uppercase bg-[#c9a227] text-black px-2 py-1 rounded">Current plan</span>
               )}
               {!current && p.popular && (
-                <span className="absolute -top-3 left-5 text-[10px] font-black uppercase bg-black text-white px-2 py-1 rounded">Most popular</span>
+                <span className="absolute -top-3 left-5 text-[10px] font-black uppercase bg-[#f5c518] text-zinc-900 px-2 py-1 rounded">Most popular</span>
               )}
               <div className="font-black text-lg mt-1">{p.label}</div>
               <div className="text-xs text-zinc-500">{p.market}</div>
@@ -99,7 +99,7 @@ function Billing() {
                   rel="noreferrer"
                   className={[
                     "mt-5 w-full h-11 rounded-lg grid place-items-center font-bold text-sm",
-                    current ? "bg-zinc-100 text-zinc-700" : "bg-black text-white",
+                    current ? "bg-zinc-100 text-zinc-700" : "bg-gradient-to-r from-[#f0a020] to-[#e2571f] text-white",
                   ].join(" ")}
                 >
                   {current ? "Manage / renew" : `Choose ${p.label}`}

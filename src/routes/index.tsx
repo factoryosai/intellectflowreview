@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Star, QrCode, MessageSquare, Sparkles, Shield, Gift, TrendingUp, ArrowRight, Lock } from "lucide-react";
-import { PLANS, type Plan } from "@/lib/plans";
+import { PLANS, ALL_FEATURES, type Plan } from "@/lib/plans";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -77,7 +77,7 @@ function Landing() {
         <div className="mt-8 flex flex-col items-center gap-3 max-w-md mx-auto">
           <Link
             to="/auth"
-            className="w-full h-[52px] rounded-xl bg-black text-white font-bold text-base shadow-xl hover:shadow-2xl hover:scale-[1.01] transition inline-flex items-center justify-center gap-2"
+            className="w-full h-[52px] rounded-xl bg-gradient-to-r from-[#f0a020] to-[#e2571f] text-white font-black text-base shadow-xl hover:shadow-2xl hover:scale-[1.01] transition inline-flex items-center justify-center gap-2"
           >
             Start at Rs 299/mo <ArrowRight className="w-4 h-4" />
           </Link>
@@ -192,11 +192,11 @@ function Landing() {
         </div>
 
 
-        <div className="mt-6 rounded-2xl bg-black text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-6 rounded-2xl bg-[#1f1b16] text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="font-bold text-sm md:text-base">
-            Total market value ₹55,500/mo — yours at ₹299/mo
+            Total market value ₹1,08,000/mo — yours from ₹299/mo
           </div>
-          <Link to="/auth" className="h-10 px-5 rounded-full bg-white text-black font-bold text-sm inline-flex items-center gap-1.5">
+          <Link to="/auth" className="h-10 px-5 rounded-full bg-[#f5c518] text-zinc-900 font-black text-sm inline-flex items-center gap-1.5">
             Get Started <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -262,10 +262,10 @@ function Landing() {
 
       {/* MOBILE STICKY CTA */}
       <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-32px)] max-w-[360px]">
-        <div className="bg-black text-white rounded-full p-1.5 flex gap-1.5 shadow-2xl">
+        <div className="bg-[#1f1b16] text-white rounded-full p-1.5 flex gap-1.5 shadow-2xl">
           <Link
             to="/auth"
-            className="flex-1 h-11 rounded-full bg-white text-black font-bold text-sm inline-flex items-center justify-center"
+            className="flex-1 h-11 rounded-full bg-gradient-to-r from-[#f0a020] to-[#e2571f] text-white font-black text-sm inline-flex items-center justify-center"
           >
             Start Rs 299
           </Link>
@@ -282,38 +282,33 @@ function Landing() {
   );
 }
 
-const ALL_FEATURES: string[] = Array.from(
-  new Set(PLANS.flatMap((p) => p.features)),
-);
-
 function PlanCard({ plan }: { plan: Plan }) {
-  const dark = false;
   const included = new Set(plan.features);
   return (
     <div
       className={[
         "relative rounded-2xl p-6 flex flex-col bg-white",
-        plan.popular ? "border-2 border-black shadow-xl" : "border border-zinc-200 shadow-sm",
+        plan.popular ? "border-2 border-[#c9a227] shadow-xl" : "border border-zinc-200 shadow-sm",
       ].join(" ")}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-xl font-black tracking-tight">{plan.label}</span>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-2xl font-black tracking-tight">{plan.label}</span>
         {plan.popular && (
-          <span className="bg-[#f5c518] text-black text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
+          <span className="bg-[#f5c518] text-zinc-900 text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
             POPULAR
           </span>
         )}
         {plan.id === "pro" && (
-          <span className="bg-black text-white text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
+          <span className="bg-[#2f2a1f] text-[#f5c518] text-[10px] font-black tracking-wide px-2 py-0.5 rounded-full">
             BEST VALUE
           </span>
         )}
       </div>
       <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-[40px] leading-none font-black tracking-tight">₹{plan.price}</span>
-        <span className="text-zinc-500 text-sm font-semibold">/mo</span>
+        <span className="text-[44px] leading-none font-black tracking-[-0.03em]">₹{plan.price}</span>
+        <span className="text-zinc-500 text-sm font-bold">/mo</span>
       </div>
-      <div className="mt-1.5 text-xs text-zinc-500 font-medium">
+      <div className="mt-1.5 text-xs text-zinc-500 font-bold">
         Market <span className="line-through">{plan.market}</span>
       </div>
 
@@ -327,7 +322,7 @@ function PlanCard({ plan }: { plan: Plan }) {
               ) : (
                 <Lock className="w-3.5 h-3.5 shrink-0 mt-1 text-zinc-300" />
               )}
-              <span className={on ? "text-zinc-800 font-medium" : "text-zinc-400"}>{f}</span>
+              <span className={on ? "text-zinc-900 font-bold" : "text-zinc-400 font-medium"}>{f}</span>
             </li>
           );
         })}
@@ -336,8 +331,10 @@ function PlanCard({ plan }: { plan: Plan }) {
       <Link
         to="/auth"
         className={[
-          "mt-6 h-12 rounded-full font-bold text-sm transition grid place-items-center",
-          dark ? "" : "bg-black text-white hover:bg-zinc-800",
+          "mt-6 h-12 rounded-full font-black text-sm transition grid place-items-center text-white shadow-lg",
+          plan.popular
+            ? "bg-gradient-to-r from-[#f0a020] to-[#e2571f] hover:brightness-105"
+            : "bg-gradient-to-r from-[#6d4bd8] to-[#4f46e5] hover:brightness-105",
         ].join(" ")}
       >
         Get Started at ₹{plan.price}/mo
