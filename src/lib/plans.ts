@@ -91,35 +91,22 @@ const GROWTH_FEATURES = [
   "Priority email support",
 ];
 
-const PRO_FEATURES = [
-  "QR + Public Review Page",
-  "Unlimited review collection",
-  "Smart QR (5★ → Google, 1–3★ private)",
-  "AI Review Writer (2 SEO keywords)",
-  "Negative Review Filter → Private",
-  "Reviews Inbox + Counter",
-  "1 FREE printed standee",
-  "Basic review analytics",
-  "AI Reply — Unlimited",
-  "Live Google Reviews Import",
-  "WhatsApp review reminder (24hr)",
-  "GMB Post Generator — 15/mo",
-  "Sentiment Analysis + Summary",
-  "SEO Health Score + breakdown",
-  "Review volume & rating trend",
-  "Auto FAQ Generator — Unlimited",
-  "Best Time to Ask + Post",
-  "Weekly Smart PDF Report",
-  "Competitor Tracking (SWOT) — 2",
-  "Local Rank Tracker vs competitors",
-  "Rating Drop Alert",
-  "Hyperlocal Opportunity Alert",
-  "WhatsApp Broadcast Pack — 20",
-  "Multi-standee & custom print designs",
-  "1 FREE Business Website (built by us)",
-  "Staff Training Tips (AI)",
-  "Priority WhatsApp + phone support",
-];
+/** Lower-tier variants of a metered feature — Business Pro gets the higher variant instead. */
+const SUPERSEDED_IN_PRO = new Set([
+  "AI Reply — 5 / month",
+  "AI Reply — 50 / month",
+  "GMB Post Generator — 1/mo",
+  "GMB Post Generator — 5/mo",
+  "Auto FAQ Generator — 3",
+  "Auto FAQ Generator — 10",
+  "WhatsApp Broadcast Pack — 5",
+  "Email support",
+  "Priority email support",
+]);
+
+/** Business Pro = every feature in the master list (minus lower-tier variants). */
+const PRO_FEATURES = ALL_FEATURES.filter((f) => !SUPERSEDED_IN_PRO.has(f));
+
 
 export const PLANS: Plan[] = [
   {
