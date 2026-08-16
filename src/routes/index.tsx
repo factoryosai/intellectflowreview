@@ -178,8 +178,13 @@ function Landing() {
 
       {/* PRICING */}
       <section id="pricing" className="max-w-[1120px] mx-auto px-4 md:px-6 py-16 border-t border-black/5">
-        <h2 className="text-center font-black text-3xl md:text-4xl tracking-tight">
-          Simple pricing. <span className="text-gradient-brand">Locked features shown clearly.</span>
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-2 bg-white border border-black/10 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide text-zinc-600 shadow-sm">
+            Pricing
+          </span>
+        </div>
+        <h2 className="mt-4 text-center font-black text-3xl md:text-4xl tracking-tight">
+          Simple pricing. <span className="text-gradient-brand">Har plan me poori value.</span>
         </h2>
         <p className="text-center text-zinc-600 mt-3 text-sm md:text-base font-medium">
           Standee always FREE • No hidden fees • Cancel anytime
