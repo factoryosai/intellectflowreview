@@ -292,8 +292,8 @@ function PlanCard({ plan }: { plan: Plan }) {
   return (
     <div
       className={[
-        "relative rounded-2xl p-6 flex flex-col bg-white",
-        plan.popular ? "border-2 border-[#c9a227] shadow-xl" : "border border-zinc-200 shadow-sm",
+        "relative rounded-2xl p-6 flex flex-col bg-white transition duration-200 hover:-translate-y-1 hover:shadow-2xl",
+        plan.popular ? "border-2 border-[#c9a227] shadow-xl md:scale-[1.02]" : "border border-zinc-200 shadow-sm",
       ].join(" ")}
     >
       <div className="flex items-center gap-2 flex-wrap">
