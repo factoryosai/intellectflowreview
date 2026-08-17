@@ -288,7 +288,6 @@ function Landing() {
 }
 
 function PlanCard({ plan }: { plan: Plan }) {
-  const included = new Set(plan.features);
   return (
     <div
       className={[
@@ -318,20 +317,23 @@ function PlanCard({ plan }: { plan: Plan }) {
       </div>
 
       <ul className="mt-5 space-y-2 text-[13px] flex-1">
-        {ALL_FEATURES.map((f) => {
-          const on = included.has(f);
+        {FEATURE_MATRIX.map((row) => {
+          const on = row[plan.id] !== false;
           return (
-            <li key={f} className="flex items-start gap-2">
+            <li key={row.name} className="flex items-start gap-2">
               {on ? (
                 <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
               ) : (
                 <Lock className="w-3.5 h-3.5 shrink-0 mt-1 text-zinc-300" />
               )}
-              <span className={on ? "text-zinc-900 font-bold" : "text-zinc-400 font-medium"}>{f}</span>
+              <span className={on ? "text-zinc-900 font-bold" : "text-zinc-400 font-medium"}>
+                {on ? featureLabel(row, plan.id) : row.name}
+              </span>
             </li>
           );
         })}
       </ul>
+
 
       <Link
         to="/auth"
