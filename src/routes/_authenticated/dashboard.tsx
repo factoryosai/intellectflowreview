@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyBusiness, getMyProfile } from "@/lib/queries";
 import { computeAccess, PLANS } from "@/lib/plans";
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
-import { MessageSquare, Star, QrCode, TrendingUp, Copy, ExternalLink, Crown, Clock, Download, Gauge, Trophy, Reply } from "lucide-react";
+import { MessageSquare, Star, QrCode, TrendingUp, Copy, ExternalLink, Crown, Clock, Download, Gauge, Trophy, Reply, AlertTriangle, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -54,6 +54,19 @@ function Dashboard() {
     enabled: !!biz?.id,
     queryFn: async () => (await supabase.from("gmb_posts").select("*", { count: "exact", head: true }).eq("business_id", biz!.id)).count ?? 0,
   });
+
+  const qc = useQueryClient();
+  const { data: alerts } = useQuery({
+    queryKey: ["dash-alerts", biz?.id],
+    enabled: !!biz?.id,
+    queryFn: async () =>
+      (await supabase.from("alerts").select("*").eq("business_id", biz!.id).eq("is_read", false).order("created_at", { ascending: false }).limit(10))
+        .data ?? [],
+  });
+  const dismissAlert = async (id: string) => {
+    await supabase.from("alerts").update({ is_read: true }).eq("id", id);
+    qc.setQueryData(["dash-alerts", biz?.id], (old: any[] | undefined) => (old ?? []).filter((a) => a.id !== id));
+  };
 
   const qrRef = useRef<HTMLDivElement>(null);
 
@@ -137,6 +150,30 @@ function Dashboard() {
           <Link to="/billing" className="h-9 px-3 rounded-lg bg-black text-white text-xs font-bold grid place-items-center">See plans</Link>
         </div>
       ) : null}
+
+      {/* Alerts (rating drops + negative reviews) */}
+      {!!(alerts ?? []).length && (
+        <div className="space-y-2">
+          {(alerts ?? []).map((a) => (
+            <div
+              key={a.id}
+              className={[
+                "rounded-2xl border p-4 flex items-start gap-3",
+                a.severity === "critical" ? "border-red-200 bg-red-50" : "border-orange-200 bg-orange-50",
+              ].join(" ")}
+            >
+              <AlertTriangle className={"w-5 h-5 shrink-0 mt-0.5 " + (a.severity === "critical" ? "text-red-600" : "text-orange-600")} />
+              <div className="flex-1 min-w-0">
+                <div className={"text-sm font-bold " + (a.severity === "critical" ? "text-red-900" : "text-orange-900")}>{a.title}</div>
+                <p className="text-sm text-zinc-600 mt-0.5">{a.message}</p>
+              </div>
+              <button onClick={() => dismissAlert(a.id)} className="p-1 rounded hover:bg-black/5 text-zinc-400 shrink-0">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Topbar */}
       <div className="bg-white border border-black/10 rounded-2xl p-4 md:p-5 flex flex-wrap items-center justify-between gap-3">

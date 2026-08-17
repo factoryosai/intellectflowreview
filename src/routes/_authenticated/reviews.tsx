@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyBusiness } from "@/lib/queries";
 import { getPlaceDetails } from "@/lib/places.functions";
 import { aiReply } from "@/lib/ai.functions";
-import { Star, Loader2, RefreshCw, ExternalLink, Sparkles } from "lucide-react";
+import { Star, Loader2, RefreshCw, ExternalLink, Sparkles, Copy } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/reviews")({
@@ -148,11 +148,47 @@ function Reviews() {
                 </div>
                 <p className="text-sm text-zinc-600 mt-1">{r.review_text}</p>
                 <div className="text-[11px] text-zinc-400 mt-1">{r.created_at ? new Date(r.created_at).toLocaleString() : ""}</div>
+                {r.status === "private" && (r as any).ai_reply_suggestion && (
+                  <AutoReplySuggestion suggestion={(r as any).ai_reply_suggestion} />
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Shown automatically under negative/private reviews — the reply was already
+// generated server-side the moment the review came in (see submit-review.ts).
+function AutoReplySuggestion({ suggestion }: { suggestion: { replies?: { lang: string; text: string }[] } }) {
+  const replies = suggestion?.replies ?? [];
+  if (!replies.length) return null;
+
+  const copy = async (text: string) => {
+    await navigator.clipboard.writeText(text).catch(() => {});
+    toast.success("Reply copied");
+  };
+
+  return (
+    <div className="mt-3 rounded-xl border border-purple-200 bg-purple-50/60 p-3">
+      <div className="text-[10px] font-bold uppercase tracking-wide text-purple-700 inline-flex items-center gap-1.5 mb-2">
+        <Sparkles className="w-3 h-3" /> AI reply ready — generated automatically
+      </div>
+      <div className="space-y-2">
+        {replies.map((rp, i) => (
+          <div key={i} className="flex items-start gap-2 bg-white rounded-lg border border-black/5 p-2.5">
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-bold text-zinc-400 uppercase">{rp.lang}</div>
+              <p className="text-sm text-zinc-700">{rp.text}</p>
+            </div>
+            <button onClick={() => copy(rp.text)} className="p-1.5 rounded hover:bg-zinc-100 text-zinc-500 shrink-0">
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
