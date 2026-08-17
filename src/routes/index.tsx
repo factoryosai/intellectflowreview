@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Star, QrCode, MessageSquare, Sparkles, Shield, Gift, TrendingUp, ArrowRight, Lock } from "lucide-react";
-import { PLANS, ALL_FEATURES, type Plan } from "@/lib/plans";
+import { PLANS, FEATURE_MATRIX, featureLabel, type Plan } from "@/lib/plans";
 
 export const Route = createFileRoute("/")({
   head: () => ({
