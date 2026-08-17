@@ -11,101 +11,62 @@ export type Plan = {
   features: string[];
 };
 
+export type FeatureRow = {
+  /** Base feature name (no duplicates across tiers). */
+  name: string;
+  /** Per-plan value: false = locked, true = included, string = tier-specific limit. */
+  starter: boolean | string;
+  growth: boolean | string;
+  pro: boolean | string;
+};
+
+/** Single source of truth — one row per feature, tier limits shown inline (no duplicates). */
+export const FEATURE_MATRIX: FeatureRow[] = [
+  { name: "QR + Public Review Page", starter: true, growth: true, pro: true },
+  { name: "Unlimited review collection", starter: true, growth: true, pro: true },
+  { name: "Smart QR (5★ → Google, 1–3★ private)", starter: true, growth: true, pro: true },
+  { name: "AI Review Writer (2 SEO keywords)", starter: true, growth: true, pro: true },
+  { name: "Negative Review Filter → Private", starter: true, growth: true, pro: true },
+  { name: "Reviews Inbox + Counter", starter: true, growth: true, pro: true },
+  { name: "1 FREE printed standee", starter: true, growth: true, pro: true },
+  { name: "Basic review analytics", starter: true, growth: true, pro: true },
+  { name: "Staff Training Tips (AI)", starter: true, growth: true, pro: true },
+  { name: "AI Reply", starter: "5 / month", growth: "50 / month", pro: "Unlimited" },
+  { name: "GMB Post Generator", starter: "1 / month", growth: "5 / month", pro: "15 / month" },
+  { name: "Auto FAQ Generator", starter: "3", growth: "10", pro: "Unlimited" },
+  { name: "Live Google Reviews Import", starter: false, growth: true, pro: true },
+  { name: "WhatsApp review reminder (24hr)", starter: false, growth: true, pro: true },
+  { name: "Sentiment Analysis + Summary", starter: false, growth: true, pro: true },
+  { name: "SEO Health Score + breakdown", starter: false, growth: true, pro: true },
+  { name: "Review volume & rating trend", starter: false, growth: true, pro: true },
+  { name: "Best Time to Ask + Post", starter: false, growth: true, pro: true },
+  { name: "Weekly Smart PDF Report", starter: false, growth: true, pro: true },
+  { name: "WhatsApp Broadcast Pack", starter: false, growth: "5", pro: "20" },
+  { name: "Competitor Tracking (SWOT)", starter: false, growth: false, pro: "2 competitors" },
+  { name: "Local Rank Tracker vs competitors", starter: false, growth: false, pro: true },
+  { name: "Rating Drop Alert", starter: false, growth: false, pro: true },
+  { name: "Hyperlocal Opportunity Alert", starter: false, growth: false, pro: true },
+  { name: "Multi-standee & custom print designs", starter: false, growth: false, pro: true },
+  { name: "1 FREE Business Website (built by us)", starter: false, growth: false, pro: true },
+  { name: "Support", starter: "Email", growth: "Priority email", pro: "Priority WhatsApp + phone" },
+];
+
 /** Master feature list — order used for the pricing matrix (locked items shown greyed). */
-export const ALL_FEATURES: string[] = [
-  "QR + Public Review Page",
-  "Unlimited review collection",
-  "Smart QR (5★ → Google, 1–3★ private)",
-  "AI Review Writer (2 SEO keywords)",
-  "Negative Review Filter → Private",
-  "Reviews Inbox + Counter",
-  "1 FREE printed standee",
-  "Basic review analytics",
-  "AI Reply — 5 / month",
-  "AI Reply — 50 / month",
-  "AI Reply — Unlimited",
-  "Live Google Reviews Import",
-  "WhatsApp review reminder (24hr)",
-  "GMB Post Generator — 1/mo",
-  "GMB Post Generator — 5/mo",
-  "GMB Post Generator — 15/mo",
-  "Sentiment Analysis + Summary",
-  "SEO Health Score + breakdown",
-  "Review volume & rating trend",
-  "Auto FAQ Generator — 3",
-  "Auto FAQ Generator — 10",
-  "Auto FAQ Generator — Unlimited",
-  "Best Time to Ask + Post",
-  "Weekly Smart PDF Report",
-  "Competitor Tracking (SWOT) — 2",
-  "Local Rank Tracker vs competitors",
-  "Rating Drop Alert",
-  "Hyperlocal Opportunity Alert",
-  "WhatsApp Broadcast Pack — 5",
-  "WhatsApp Broadcast Pack — 20",
-  "Multi-standee & custom print designs",
-  "1 FREE Business Website (built by us)",
-  "Staff Training Tips (AI)",
-  "Email support",
-  "Priority email support",
-  "Priority WhatsApp + phone support",
-];
+export const ALL_FEATURES: string[] = FEATURE_MATRIX.map((r) => r.name);
 
-const STARTER_FEATURES = [
-  "QR + Public Review Page",
-  "Unlimited review collection",
-  "Smart QR (5★ → Google, 1–3★ private)",
-  "AI Review Writer (2 SEO keywords)",
-  "Negative Review Filter → Private",
-  "Reviews Inbox + Counter",
-  "1 FREE printed standee",
-  "Basic review analytics",
-  "AI Reply — 5 / month",
-  "GMB Post Generator — 1/mo",
-  "Auto FAQ Generator — 3",
-  "Staff Training Tips (AI)",
-  "Email support",
-];
+export function featureLabel(row: FeatureRow, plan: PlanId): string {
+  const v = row[plan];
+  return typeof v === "string" ? `${row.name} — ${v}` : row.name;
+}
 
-const GROWTH_FEATURES = [
-  "QR + Public Review Page",
-  "Unlimited review collection",
-  "Smart QR (5★ → Google, 1–3★ private)",
-  "AI Review Writer (2 SEO keywords)",
-  "Negative Review Filter → Private",
-  "Reviews Inbox + Counter",
-  "1 FREE printed standee",
-  "Basic review analytics",
-  "AI Reply — 50 / month",
-  "Live Google Reviews Import",
-  "WhatsApp review reminder (24hr)",
-  "GMB Post Generator — 5/mo",
-  "Sentiment Analysis + Summary",
-  "SEO Health Score + breakdown",
-  "Review volume & rating trend",
-  "Auto FAQ Generator — 10",
-  "Best Time to Ask + Post",
-  "Weekly Smart PDF Report",
-  "WhatsApp Broadcast Pack — 5",
-  "Staff Training Tips (AI)",
-  "Priority email support",
-];
+function featuresFor(plan: PlanId): string[] {
+  return FEATURE_MATRIX.filter((r) => r[plan] !== false).map((r) => featureLabel(r, plan));
+}
 
-/** Lower-tier variants of a metered feature — Business Pro gets the higher variant instead. */
-const SUPERSEDED_IN_PRO = new Set([
-  "AI Reply — 5 / month",
-  "AI Reply — 50 / month",
-  "GMB Post Generator — 1/mo",
-  "GMB Post Generator — 5/mo",
-  "Auto FAQ Generator — 3",
-  "Auto FAQ Generator — 10",
-  "WhatsApp Broadcast Pack — 5",
-  "Email support",
-  "Priority email support",
-]);
+const STARTER_FEATURES = featuresFor("starter");
+const GROWTH_FEATURES = featuresFor("growth");
+const PRO_FEATURES = featuresFor("pro");
 
-/** Business Pro = every feature in the master list (minus lower-tier variants). */
-const PRO_FEATURES = ALL_FEATURES.filter((f) => !SUPERSEDED_IN_PRO.has(f));
 
 
 export const PLANS: Plan[] = [
