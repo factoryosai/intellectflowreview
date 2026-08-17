@@ -28,6 +28,7 @@ import { Route as AuthenticatedStandeesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
+import { Route as ApiPublicRatingDropAlertRouteImport } from './routes/api/public/rating-drop-alert'
 import { Route as ApiPublicSubmitReviewRouteImport } from './routes/api/public/submit-review'
 
 const IndexRoute = IndexRouteImport.update({
@@ -125,6 +126,12 @@ const RSlugRoute = RSlugRouteImport.update({
   path: '/r/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicRatingDropAlertRoute =
+  ApiPublicRatingDropAlertRouteImport.update({
+    id: '/api/public/rating-drop-alert',
+    path: '/api/public/rating-drop-alert',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicSubmitReviewRoute = ApiPublicSubmitReviewRouteImport.update({
   id: '/api/public/submit-review',
   path: '/api/public/submit-review',
@@ -150,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/r/$slug': typeof RSlugRoute
+  '/api/public/rating-drop-alert': typeof ApiPublicRatingDropAlertRoute
   '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
 }
 export interface FileRoutesByTo {
@@ -171,6 +179,7 @@ export interface FileRoutesByTo {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/r/$slug': typeof RSlugRoute
+  '/api/public/rating-drop-alert': typeof ApiPublicRatingDropAlertRoute
   '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
 }
 export interface FileRoutesById {
@@ -194,6 +203,7 @@ export interface FileRoutesById {
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/r/$slug': typeof RSlugRoute
+  '/api/public/rating-drop-alert': typeof ApiPublicRatingDropAlertRoute
   '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
 }
 export interface FileRouteTypes {
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/auth/callback'
     | '/r/$slug'
+    | '/api/public/rating-drop-alert'
     | '/api/public/submit-review'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/auth/callback'
     | '/r/$slug'
+    | '/api/public/rating-drop-alert'
     | '/api/public/submit-review'
   id:
     | '__root__'
@@ -260,6 +272,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whatsapp'
     | '/auth/callback'
     | '/r/$slug'
+    | '/api/public/rating-drop-alert'
     | '/api/public/submit-review'
   fileRoutesById: FileRoutesById
 }
@@ -270,6 +283,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RSlugRoute: typeof RSlugRoute
+  ApiPublicRatingDropAlertRoute: typeof ApiPublicRatingDropAlertRoute
   ApiPublicSubmitReviewRoute: typeof ApiPublicSubmitReviewRoute
 }
 
@@ -408,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/rating-drop-alert': {
+      id: '/api/public/rating-drop-alert'
+      path: '/api/public/rating-drop-alert'
+      fullPath: '/api/public/rating-drop-alert'
+      preLoaderRoute: typeof ApiPublicRatingDropAlertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/submit-review': {
       id: '/api/public/submit-review'
       path: '/api/public/submit-review'
@@ -468,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RSlugRoute: RSlugRoute,
+  ApiPublicRatingDropAlertRoute: ApiPublicRatingDropAlertRoute,
   ApiPublicSubmitReviewRoute: ApiPublicSubmitReviewRoute,
 }
 export const routeTree = rootRouteImport
