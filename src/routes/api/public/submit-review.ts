@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/submit-review")({
 
         const { data: biz, error: bizErr } = await supabaseAdmin
           .from("businesses")
-          .select("id, name, gmb_link")
+          .select("id, name, gmb_link, description")
           .eq("slug", slug)
           .maybeSingle();
         if (bizErr || !biz) {
@@ -41,19 +41,55 @@ export const Route = createFileRoute("/api/public/submit-review")({
         const status = isPositive ? "public" : "private";
         const sentiment = isPositive ? "positive" : "negative";
 
-        const { error: revErr } = await supabaseAdmin.from("reviews").insert({
-          business_id: biz.id,
-          customer_name: customer_name || null,
-          customer_phone: customer_phone || null,
-          rating,
-          review_text,
-          ai_generated: !!ai_generated,
-          status,
-          source: "qr",
-          sentiment,
-        });
-        if (revErr) {
+        const { data: insertedReview, error: revErr } = await supabaseAdmin
+          .from("reviews")
+          .insert({
+            business_id: biz.id,
+            customer_name: customer_name || null,
+            customer_phone: customer_phone || null,
+            rating,
+            review_text,
+            ai_generated: !!ai_generated,
+            status,
+            source: "qr",
+            sentiment,
+          })
+          .select("id")
+          .single();
+        if (revErr || !insertedReview) {
           return new Response(JSON.stringify({ error: "Could not save review" }), { status: 500 });
+        }
+
+        // Negative review → auto-generate AI reply suggestions right away so the
+        // owner sees ready replies without opening the AI Reply tool manually.
+        if (!isPositive) {
+          try {
+            const { aiReply } = await import("@/lib/ai.functions");
+            const suggestion = await aiReply({
+              data: {
+                reviewText: review_text,
+                rating,
+                businessName: biz.name,
+                businessDescription: (biz as any).description || undefined,
+              },
+            });
+            await supabaseAdmin
+              .from("reviews")
+              .update({ ai_reply_suggestion: suggestion })
+              .eq("id", insertedReview.id);
+          } catch {
+            // best-effort — owner can still generate a reply manually if this fails
+          }
+
+          // Log a per-review negative alert (in addition to the aggregate rating-drop
+          // cron alert) so the dashboard can surface it immediately.
+          await supabaseAdmin.from("alerts").insert({
+            business_id: biz.id,
+            type: "negative_review",
+            severity: rating <= 2 ? "critical" : "warning",
+            title: `New ${rating}★ review needs attention`,
+            message: review_text.slice(0, 180),
+          });
         }
 
         if (customer_phone) {

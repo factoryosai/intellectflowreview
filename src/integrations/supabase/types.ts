@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          business_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          severity: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          severity?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          severity?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           address: string | null
@@ -30,6 +78,8 @@ export type Database = {
           qr_url: string | null
           rating: number | null
           slug: string
+          swot_generated_at: string | null
+          swot_summary: Json | null
           total_reviews: number | null
           total_scans: number | null
           user_id: string
@@ -50,6 +100,8 @@ export type Database = {
           qr_url?: string | null
           rating?: number | null
           slug: string
+          swot_generated_at?: string | null
+          swot_summary?: Json | null
           total_reviews?: number | null
           total_scans?: number | null
           user_id: string
@@ -70,6 +122,8 @@ export type Database = {
           qr_url?: string | null
           rating?: number | null
           slug?: string
+          swot_generated_at?: string | null
+          swot_summary?: Json | null
           total_reviews?: number | null
           total_scans?: number | null
           user_id?: string
@@ -174,6 +228,51 @@ export type Database = {
           },
           {
             foreignKeyName: "coupons_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faqs: {
+        Row: {
+          answer: string
+          business_id: string
+          created_at: string | null
+          id: string
+          published: boolean | null
+          question: string
+          source: string | null
+        }
+        Insert: {
+          answer: string
+          business_id: string
+          created_at?: string | null
+          id?: string
+          published?: boolean | null
+          question: string
+          source?: string | null
+        }
+        Update: {
+          answer?: string
+          business_id?: string
+          created_at?: string | null
+          id?: string
+          published?: boolean | null
+          question?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faqs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faqs_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses_public"
@@ -289,6 +388,7 @@ export type Database = {
       reviews: {
         Row: {
           ai_generated: boolean | null
+          ai_reply_suggestion: Json | null
           business_id: string
           created_at: string | null
           customer_name: string | null
@@ -302,6 +402,7 @@ export type Database = {
         }
         Insert: {
           ai_generated?: boolean | null
+          ai_reply_suggestion?: Json | null
           business_id: string
           created_at?: string | null
           customer_name?: string | null
@@ -315,6 +416,7 @@ export type Database = {
         }
         Update: {
           ai_generated?: boolean | null
+          ai_reply_suggestion?: Json | null
           business_id?: string
           created_at?: string | null
           customer_name?: string | null

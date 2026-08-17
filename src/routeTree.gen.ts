@@ -19,6 +19,7 @@ import { Route as AuthenticatedAiReplyRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedCompetitorsRouteImport } from './routes/_authenticated/competitors'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
 import { Route as AuthenticatedGmbRouteImport } from './routes/_authenticated/gmb'
 import { Route as AuthenticatedQrRouteImport } from './routes/_authenticated/qr'
 import { Route as AuthenticatedReviewsRouteImport } from './routes/_authenticated/reviews'
@@ -27,6 +28,7 @@ import { Route as AuthenticatedStandeesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
+import { Route as ApiPublicRatingDropAlertRouteImport } from './routes/api/public/rating-drop-alert'
 import { Route as ApiPublicSubmitReviewRouteImport } from './routes/api/public/submit-review'
 
 const IndexRoute = IndexRouteImport.update({
@@ -79,6 +81,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFaqRoute = AuthenticatedFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedGmbRoute = AuthenticatedGmbRouteImport.update({
   id: '/gmb',
   path: '/gmb',
@@ -119,6 +126,12 @@ const RSlugRoute = RSlugRouteImport.update({
   path: '/r/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicRatingDropAlertRoute =
+  ApiPublicRatingDropAlertRouteImport.update({
+    id: '/api/public/rating-drop-alert',
+    path: '/api/public/rating-drop-alert',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicSubmitReviewRoute = ApiPublicSubmitReviewRouteImport.update({
   id: '/api/public/submit-review',
   path: '/api/public/submit-review',
@@ -135,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AuthenticatedBillingRoute
   '/competitors': typeof AuthenticatedCompetitorsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/faq': typeof AuthenticatedFaqRoute
   '/gmb': typeof AuthenticatedGmbRoute
   '/qr': typeof AuthenticatedQrRoute
   '/reviews': typeof AuthenticatedReviewsRoute
@@ -143,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/r/$slug': typeof RSlugRoute
+  '/api/public/rating-drop-alert': typeof ApiPublicRatingDropAlertRoute
   '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
 }
 export interface FileRoutesByTo {
@@ -155,6 +170,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/competitors': typeof AuthenticatedCompetitorsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/faq': typeof AuthenticatedFaqRoute
   '/gmb': typeof AuthenticatedGmbRoute
   '/qr': typeof AuthenticatedQrRoute
   '/reviews': typeof AuthenticatedReviewsRoute
@@ -163,6 +179,7 @@ export interface FileRoutesByTo {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/r/$slug': typeof RSlugRoute
+  '/api/public/rating-drop-alert': typeof ApiPublicRatingDropAlertRoute
   '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
 }
 export interface FileRoutesById {
@@ -177,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/competitors': typeof AuthenticatedCompetitorsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/faq': typeof AuthenticatedFaqRoute
   '/_authenticated/gmb': typeof AuthenticatedGmbRoute
   '/_authenticated/qr': typeof AuthenticatedQrRoute
   '/_authenticated/reviews': typeof AuthenticatedReviewsRoute
@@ -185,6 +203,7 @@ export interface FileRoutesById {
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/r/$slug': typeof RSlugRoute
+  '/api/public/rating-drop-alert': typeof ApiPublicRatingDropAlertRoute
   '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
 }
 export interface FileRouteTypes {
@@ -199,6 +218,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/competitors'
     | '/dashboard'
+    | '/faq'
     | '/gmb'
     | '/qr'
     | '/reviews'
@@ -207,6 +227,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/auth/callback'
     | '/r/$slug'
+    | '/api/public/rating-drop-alert'
     | '/api/public/submit-review'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -219,6 +240,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/competitors'
     | '/dashboard'
+    | '/faq'
     | '/gmb'
     | '/qr'
     | '/reviews'
@@ -227,6 +249,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/auth/callback'
     | '/r/$slug'
+    | '/api/public/rating-drop-alert'
     | '/api/public/submit-review'
   id:
     | '__root__'
@@ -240,6 +263,7 @@ export interface FileRouteTypes {
     | '/_authenticated/billing'
     | '/_authenticated/competitors'
     | '/_authenticated/dashboard'
+    | '/_authenticated/faq'
     | '/_authenticated/gmb'
     | '/_authenticated/qr'
     | '/_authenticated/reviews'
@@ -248,6 +272,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whatsapp'
     | '/auth/callback'
     | '/r/$slug'
+    | '/api/public/rating-drop-alert'
     | '/api/public/submit-review'
   fileRoutesById: FileRoutesById
 }
@@ -258,6 +283,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RSlugRoute: typeof RSlugRoute
+  ApiPublicRatingDropAlertRoute: typeof ApiPublicRatingDropAlertRoute
   ApiPublicSubmitReviewRoute: typeof ApiPublicSubmitReviewRoute
 }
 
@@ -333,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/faq': {
+      id: '/_authenticated/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof AuthenticatedFaqRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/gmb': {
       id: '/_authenticated/gmb'
       path: '/gmb'
@@ -389,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/rating-drop-alert': {
+      id: '/api/public/rating-drop-alert'
+      path: '/api/public/rating-drop-alert'
+      fullPath: '/api/public/rating-drop-alert'
+      preLoaderRoute: typeof ApiPublicRatingDropAlertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/submit-review': {
       id: '/api/public/submit-review'
       path: '/api/public/submit-review'
@@ -405,6 +445,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCompetitorsRoute: typeof AuthenticatedCompetitorsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFaqRoute: typeof AuthenticatedFaqRoute
   AuthenticatedGmbRoute: typeof AuthenticatedGmbRoute
   AuthenticatedQrRoute: typeof AuthenticatedQrRoute
   AuthenticatedReviewsRoute: typeof AuthenticatedReviewsRoute
@@ -419,6 +460,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCompetitorsRoute: AuthenticatedCompetitorsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFaqRoute: AuthenticatedFaqRoute,
   AuthenticatedGmbRoute: AuthenticatedGmbRoute,
   AuthenticatedQrRoute: AuthenticatedQrRoute,
   AuthenticatedReviewsRoute: AuthenticatedReviewsRoute,
@@ -447,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RSlugRoute: RSlugRoute,
+  ApiPublicRatingDropAlertRoute: ApiPublicRatingDropAlertRoute,
   ApiPublicSubmitReviewRoute: ApiPublicSubmitReviewRoute,
 }
 export const routeTree = rootRouteImport
