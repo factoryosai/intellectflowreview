@@ -19,6 +19,7 @@ import { Route as AuthenticatedAiReplyRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedCompetitorsRouteImport } from './routes/_authenticated/competitors'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
 import { Route as AuthenticatedGmbRouteImport } from './routes/_authenticated/gmb'
 import { Route as AuthenticatedQrRouteImport } from './routes/_authenticated/qr'
 import { Route as AuthenticatedReviewsRouteImport } from './routes/_authenticated/reviews'
@@ -79,6 +80,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFaqRoute = AuthenticatedFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedGmbRoute = AuthenticatedGmbRouteImport.update({
   id: '/gmb',
   path: '/gmb',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AuthenticatedBillingRoute
   '/competitors': typeof AuthenticatedCompetitorsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/faq': typeof AuthenticatedFaqRoute
   '/gmb': typeof AuthenticatedGmbRoute
   '/qr': typeof AuthenticatedQrRoute
   '/reviews': typeof AuthenticatedReviewsRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/competitors': typeof AuthenticatedCompetitorsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/faq': typeof AuthenticatedFaqRoute
   '/gmb': typeof AuthenticatedGmbRoute
   '/qr': typeof AuthenticatedQrRoute
   '/reviews': typeof AuthenticatedReviewsRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/competitors': typeof AuthenticatedCompetitorsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/faq': typeof AuthenticatedFaqRoute
   '/_authenticated/gmb': typeof AuthenticatedGmbRoute
   '/_authenticated/qr': typeof AuthenticatedQrRoute
   '/_authenticated/reviews': typeof AuthenticatedReviewsRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/competitors'
     | '/dashboard'
+    | '/faq'
     | '/gmb'
     | '/qr'
     | '/reviews'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/competitors'
     | '/dashboard'
+    | '/faq'
     | '/gmb'
     | '/qr'
     | '/reviews'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/_authenticated/billing'
     | '/_authenticated/competitors'
     | '/_authenticated/dashboard'
+    | '/_authenticated/faq'
     | '/_authenticated/gmb'
     | '/_authenticated/qr'
     | '/_authenticated/reviews'
@@ -333,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/faq': {
+      id: '/_authenticated/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof AuthenticatedFaqRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/gmb': {
       id: '/_authenticated/gmb'
       path: '/gmb'
@@ -405,6 +424,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCompetitorsRoute: typeof AuthenticatedCompetitorsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFaqRoute: typeof AuthenticatedFaqRoute
   AuthenticatedGmbRoute: typeof AuthenticatedGmbRoute
   AuthenticatedQrRoute: typeof AuthenticatedQrRoute
   AuthenticatedReviewsRoute: typeof AuthenticatedReviewsRoute
@@ -419,6 +439,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCompetitorsRoute: AuthenticatedCompetitorsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFaqRoute: AuthenticatedFaqRoute,
   AuthenticatedGmbRoute: AuthenticatedGmbRoute,
   AuthenticatedQrRoute: AuthenticatedQrRoute,
   AuthenticatedReviewsRoute: AuthenticatedReviewsRoute,
