@@ -166,10 +166,10 @@ function Admin() {
   return (
     <div className="space-y-5">
       <div>
-        <div className="inline-flex items-center gap-2 text-xs font-bold bg-black text-white px-2.5 py-1 rounded-full">
-          <Shield className="w-3.5 h-3.5" /> ADMIN
+        <div className="eyebrow inline-flex items-center gap-2 bg-[var(--ink)] text-white px-3 py-1.5 rounded-full">
+          <Shield className="w-3.5 h-3.5" /> Admin
         </div>
-        <h1 className="font-black text-2xl md:text-3xl mt-2">Platform Console</h1>
+        <h1 className="font-black text-2xl md:text-3xl mt-2 text-[var(--ink)]">Platform Console</h1>
         <p className="text-sm text-zinc-500">Manage users, businesses, subscriptions and standee shipments.</p>
       </div>
 
@@ -188,7 +188,7 @@ function Admin() {
       </div>
 
 
-      <div className="bg-white border border-black/10 rounded-2xl">
+      <div className="ticket-card">
         <div className="flex items-center justify-between border-b border-black/5 p-2 gap-2 flex-wrap">
           <div className="flex gap-1 flex-wrap">
             {(["overview", "users", "businesses", "onboard", "standees", "reviews"] as const).map((t) => (
@@ -196,8 +196,8 @@ function Admin() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={[
-                  "px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide",
-                  tab === t ? "bg-black text-white" : "text-zinc-600 hover:bg-zinc-100",
+                  "px-3 py-1.5 rounded-lg eyebrow",
+                  tab === t ? "bg-[var(--ink)] text-white" : "text-zinc-600 hover:bg-zinc-100",
                 ].join(" ")}
               >
                 {t}
@@ -534,14 +534,14 @@ function BizTable({ rows }: { rows: Array<{ id: string; name: string; slug: stri
 
 function Stat({ icon: Icon, label, value, tint }: { icon: React.ElementType; label: string; value: number; tint: string }) {
   return (
-    <div className="bg-white border border-black/10 rounded-xl p-4">
+    <div className="ticket-card p-4">
       <div className="flex items-center justify-between">
         <span className="text-xs text-zinc-500 font-semibold">{label}</span>
         <span className={["w-7 h-7 rounded-lg grid place-items-center", tint].join(" ")}>
           <Icon className="w-3.5 h-3.5" />
         </span>
       </div>
-      <div className="mt-2 font-black text-2xl">{value.toLocaleString()}</div>
+      <div className="mt-2 font-mono-brand font-black text-2xl text-[var(--ink)]">{value.toLocaleString()}</div>
     </div>
   );
 }

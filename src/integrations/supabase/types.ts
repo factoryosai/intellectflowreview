@@ -14,54 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      alerts: {
-        Row: {
-          business_id: string
-          created_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          severity: string | null
-          title: string
-          type: string
-        }
-        Insert: {
-          business_id: string
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          severity?: string | null
-          title: string
-          type: string
-        }
-        Update: {
-          business_id?: string
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          severity?: string | null
-          title?: string
-          type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "alerts_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "alerts_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses_public"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       businesses: {
         Row: {
           address: string | null
@@ -141,6 +93,54 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alerts: {
+        Row: {
+          business_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          severity: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          severity?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          severity?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses_public"
             referencedColumns: ["id"]
           },
         ]

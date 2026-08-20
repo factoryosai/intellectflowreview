@@ -53,6 +53,7 @@ function Onboarding() {
     name: "", phone: "", city: "Visavadar", address: "",
     gmb_link: "", slug: "", place_id: "", photo_url: "", website: "",
     description: "", business_type: "",
+    latitude: null as number | null, longitude: null as number | null,
     plan: "growth" as "starter" | "growth" | "pro",
   });
 
@@ -86,6 +87,8 @@ function Onboarding() {
         photo_url: d.photo_url ?? "",
         website: d.website ?? "",
         business_type: d.business_type ?? "",
+        latitude: d.latitude ?? null,
+        longitude: d.longitude ?? null,
       }));
       toast.success("Business details loaded");
     } catch (e) {
@@ -120,6 +123,7 @@ function Onboarding() {
         city: form.city, address: form.address, phone: form.phone,
         place_id: form.place_id, photo_url: form.photo_url, website: form.website,
         description: form.description, business_type: form.business_type,
+        latitude: form.latitude, longitude: form.longitude,
       });
       if (bErr) {
         console.error("[onboarding] business insert:", bErr);
