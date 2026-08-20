@@ -71,6 +71,8 @@ export type Database = {
           description: string | null
           gmb_link: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           phone: string | null
           photo_url: string | null
@@ -93,6 +95,8 @@ export type Database = {
           description?: string | null
           gmb_link?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           phone?: string | null
           photo_url?: string | null
@@ -115,6 +119,8 @@ export type Database = {
           description?: string | null
           gmb_link?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           phone?: string | null
           photo_url?: string | null
@@ -149,6 +155,7 @@ export type Database = {
           created_at: string | null
           id: string
           last_checked: string | null
+          place_id: string | null
         }
         Insert: {
           business_id: string
@@ -159,6 +166,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           last_checked?: string | null
+          place_id?: string | null
         }
         Update: {
           business_id?: string
@@ -169,6 +177,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           last_checked?: string | null
+          place_id?: string | null
         }
         Relationships: [
           {
