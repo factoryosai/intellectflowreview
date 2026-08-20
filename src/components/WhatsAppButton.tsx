@@ -2,8 +2,8 @@
 //
 // ⚠️ Replace WHATSAPP_NUMBER below with your real WhatsApp Business number
 // (with country code, no + or spaces, e.g. "919876543210") before going live.
-const WHATSAPP_NUMBER = "919999999999";
-const DEFAULT_MESSAGE = "Hi! I have a question about IntellectFlow.";
+const WHATSAPP_NUMBER = "917069525795";
+const DEFAULT_MESSAGE = "Hi! I want to know about IntellectFlow.";
 
 export function WhatsAppButton() {
   const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(DEFAULT_MESSAGE)}`;
