@@ -5,7 +5,7 @@ import { getMyBusiness, getMyProfile } from "@/lib/queries";
 import { computeAccess, PLANS } from "@/lib/plans";
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
-import { MessageSquare, Star, QrCode, TrendingUp, Copy, ExternalLink, Crown, Clock, Download, Gauge, Trophy, Reply, AlertTriangle, X } from "lucide-react";
+import { MessageSquare, Star, QrCode, TrendingUp, Copy, ExternalLink, Crown, Clock, Download, Gauge, Trophy, Reply, AlertTriangle, X, HelpCircle, Image as ImageIcon, MessageCircle, MapPin, Bot } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -55,6 +55,12 @@ function Dashboard() {
     queryFn: async () => (await supabase.from("gmb_posts").select("*", { count: "exact", head: true }).eq("business_id", biz!.id)).count ?? 0,
   });
 
+  const { data: faqCount } = useQuery({
+    queryKey: ["dash-faq", biz?.id],
+    enabled: !!biz?.id,
+    queryFn: async () => (await supabase.from("faqs").select("*", { count: "exact", head: true }).eq("business_id", biz!.id)).count ?? 0,
+  });
+
   const qc = useQueryClient();
   const { data: alerts } = useQuery({
     queryKey: ["dash-alerts", biz?.id],
@@ -72,7 +78,7 @@ function Dashboard() {
 
   if (!biz) {
     return (
-      <div className="bg-white border border-black/10 rounded-2xl p-8 text-center">
+      <div className="ticket-card p-8 text-center">
         <h2 className="font-black text-xl">Finish setting up your business</h2>
         <p className="text-sm text-zinc-500 mt-1">Complete onboarding to see your dashboard.</p>
         <Link to="/onboarding" className="mt-4 inline-flex h-10 items-center rounded-lg bg-black text-white px-4 text-sm font-bold">Complete setup</Link>
@@ -129,6 +135,30 @@ function Dashboard() {
   const position = powers.filter((p) => p > myPower).length + 1;
   const rankScore = comps.length ? Math.round((better / comps.length) * 100) : Math.min(100, Math.round(myPower * 18));
 
+  // ---- GEO score (local/geo SEO — how well you're set up to win the local pack) ----
+  const geoItems = [
+    { label: "Exact map location pinned", ok: (biz as any).latitude != null && (biz as any).longitude != null, pts: 15 },
+    { label: "Full address & city set", ok: !!biz.address && !!biz.city, pts: 15 },
+    { label: "Business category set", ok: !!biz.business_type, pts: 10 },
+    { label: "Google Maps link present", ok: !!biz.gmb_link, pts: 15 },
+    { label: "5+ nearby competitors tracked", ok: comps.length >= 5, pts: 15 },
+    { label: "Ranked in local top 3", ok: comps.length > 0 && position <= 3, pts: 20 },
+    { label: "Phone matches Google listing", ok: !!biz.phone && !!biz.place_id, pts: 10 },
+  ];
+  const geoScore = geoItems.reduce((s, i) => s + (i.ok ? i.pts : 0), 0);
+
+  // ---- AEO score (answer-engine optimization — how citable you are to AI chat/voice answers) ----
+  const reviewsWithText = list.filter((r) => (r.review_text ?? "").trim().length > 0).length;
+  const aeoItems = [
+    { label: "5+ published FAQs", ok: (faqCount ?? 0) >= 5, pts: 25 },
+    { label: "Business description written", ok: !!biz.description, pts: 15 },
+    { label: "10+ reviews with written text", ok: reviewsWithText >= 10, pts: 20 },
+    { label: "Response rate 50%+", ok: responseRate >= 50, pts: 15 },
+    { label: "Published GMB posts (fresh content)", ok: (gmbCount ?? 0) > 0, pts: 10 },
+    { label: "Rating 4.0+ (trust threshold)", ok: (biz.rating ?? 0) >= 4, pts: 15 },
+  ];
+  const aeoScore = aeoItems.reduce((s, i) => s + (i.ok ? i.pts : 0), 0);
+
   return (
     <div className="space-y-5">
       {/* Trial / access banner */}
@@ -176,7 +206,7 @@ function Dashboard() {
       )}
 
       {/* Topbar */}
-      <div className="bg-white border border-black/10 rounded-2xl p-4 md:p-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="ticket-card p-4 md:p-5 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="font-black text-xl truncate">{biz.name}</h1>
           <div className="flex items-center gap-2 mt-1 text-xs text-zinc-500">
@@ -205,6 +235,10 @@ function Dashboard() {
         <ScoreCard icon={Trophy} title="Local Rank Score" value={rankScore} suffix="/100" hint={comps.length ? `#${position} of ${comps.length + 1} tracked nearby` : "Add competitors to benchmark"} />
         <ScoreCard icon={Reply} title="Response Rate" value={responseRate} suffix="%" hint={`${handled} of ${list.length} reviews handled`} />
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <ScoreCard icon={MapPin} title="GEO Score" value={geoScore} suffix="/100" hint={geoScore >= 80 ? "Strong local-pack setup" : geoScore >= 50 ? "Decent — tighten a few gaps" : "Weak local signals"} />
+        <ScoreCard icon={Bot} title="AEO Score" value={aeoScore} suffix="/100" hint={aeoScore >= 80 ? "Highly citable by AI answers" : aeoScore >= 50 ? "Getting there — add more FAQs" : "Low AI-answer visibility"} />
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -216,7 +250,7 @@ function Dashboard() {
 
       {/* Charts + QR */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div className="lg:col-span-2 bg-white border border-black/10 rounded-2xl p-5">
+        <div className="lg:col-span-2 ticket-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-black">Review volume — last 8 weeks</h2>
             <span className={"text-xs font-bold px-2 py-1 rounded " + (ratingTrend >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-orange-100 text-orange-800")}>
@@ -245,7 +279,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white border border-black/10 rounded-2xl p-5">
+        <div className="ticket-card p-5">
           <h2 className="font-black">Your review QR</h2>
           <p className="text-xs text-zinc-500">Print it, stick it, collect reviews.</p>
           <div ref={qrRef} className="mt-4 p-3 bg-white border border-black/10 rounded-xl grid place-items-center">
@@ -262,7 +296,7 @@ function Dashboard() {
       </div>
 
       {/* SEO breakdown */}
-      <div className="bg-white border border-black/10 rounded-2xl p-5">
+      <div className="ticket-card p-5">
         <h2 className="font-black">SEO health breakdown</h2>
         <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
           {seoItems.map((i) => (
@@ -276,8 +310,46 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* GEO breakdown */}
+      <div className="ticket-card p-5">
+        <h2 className="font-black inline-flex items-center gap-2"><MapPin className="w-4 h-4" /> GEO (Local SEO) breakdown</h2>
+        <p className="text-xs text-zinc-500 mt-0.5">What decides whether you show up in the Google local pack / maps near your customers.</p>
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+          {geoItems.map((i) => (
+            <div key={i.label} className="flex items-center justify-between rounded-lg border border-black/5 bg-zinc-50 px-3 py-2 text-sm">
+              <span className={i.ok ? "text-zinc-700" : "text-zinc-500"}>{i.label}</span>
+              <span className={"text-[11px] font-bold px-2 py-0.5 rounded " + (i.ok ? "bg-emerald-100 text-emerald-800" : "bg-orange-100 text-orange-800")}>
+                {i.ok ? `+${i.pts}` : `Missing ${i.pts}`}
+              </span>
+            </div>
+          ))}
+        </div>
+        {!geoItems.find((i) => i.label.includes("5+ nearby"))?.ok && (
+          <Link to="/competitors" className="mt-3 inline-block text-xs font-bold text-black underline">Auto-fetch nearby competitors →</Link>
+        )}
+      </div>
+
+      {/* AEO breakdown */}
+      <div className="ticket-card p-5">
+        <h2 className="font-black inline-flex items-center gap-2"><Bot className="w-4 h-4" /> AEO (Answer Engine) breakdown</h2>
+        <p className="text-xs text-zinc-500 mt-0.5">What makes AI chat assistants and voice search cite your business when customers ask.</p>
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+          {aeoItems.map((i) => (
+            <div key={i.label} className="flex items-center justify-between rounded-lg border border-black/5 bg-zinc-50 px-3 py-2 text-sm">
+              <span className={i.ok ? "text-zinc-700" : "text-zinc-500"}>{i.label}</span>
+              <span className={"text-[11px] font-bold px-2 py-0.5 rounded " + (i.ok ? "bg-emerald-100 text-emerald-800" : "bg-orange-100 text-orange-800")}>
+                {i.ok ? `+${i.pts}` : `Missing ${i.pts}`}
+              </span>
+            </div>
+          ))}
+        </div>
+        {(faqCount ?? 0) < 5 && (
+          <Link to="/faq" className="mt-3 inline-block text-xs font-bold text-black underline">Generate more FAQs →</Link>
+        )}
+      </div>
+
       {/* Reviews feed */}
-      <div className="bg-white border border-black/10 rounded-2xl">
+      <div className="ticket-card">
         <div className="p-4 flex items-center justify-between border-b border-black/5">
           <h2 className="font-black">Recent reviews</h2>
           <Link to="/reviews" className="text-xs font-bold text-zinc-600 hover:text-black">View all</Link>
@@ -305,21 +377,36 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Link to="/ai-reply" className="bg-white border border-black/10 rounded-xl p-4 hover:shadow-md">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <Link to="/ai-reply" className="ticket-card p-4 hover:shadow-md hover:-translate-y-0.5 transition">
           <Reply className="w-5 h-5 mb-2" />
           <div className="font-bold text-sm">AI reply drafts</div>
           <div className="text-xs text-zinc-500">Reply to every review fast</div>
         </Link>
-        <Link to="/reviews" className="bg-white border border-black/10 rounded-xl p-4 hover:shadow-md">
+        <Link to="/reviews" className="ticket-card p-4 hover:shadow-md hover:-translate-y-0.5 transition">
           <MessageSquare className="w-5 h-5 mb-2" />
           <div className="font-bold text-sm">Reviews</div>
           <div className="text-xs text-zinc-500">Live Google + QR reviews</div>
         </Link>
-        <Link to="/competitors" className="bg-white border border-black/10 rounded-xl p-4 hover:shadow-md">
+        <Link to="/competitors" className="ticket-card p-4 hover:shadow-md hover:-translate-y-0.5 transition">
           <Trophy className="w-5 h-5 mb-2" />
           <div className="font-bold text-sm">Competitors</div>
           <div className="text-xs text-zinc-500">Track your local rank</div>
+        </Link>
+        <Link to="/faq" className="ticket-card p-4 hover:shadow-md hover:-translate-y-0.5 transition">
+          <HelpCircle className="w-5 h-5 mb-2" />
+          <div className="font-bold text-sm">FAQs</div>
+          <div className="text-xs text-zinc-500">AI-written Google Q&amp;A</div>
+        </Link>
+        <Link to="/gmb" className="ticket-card p-4 hover:shadow-md hover:-translate-y-0.5 transition">
+          <ImageIcon className="w-5 h-5 mb-2" />
+          <div className="font-bold text-sm">GMB posts</div>
+          <div className="text-xs text-zinc-500">AI-written profile posts</div>
+        </Link>
+        <Link to="/whatsapp" className="ticket-card p-4 hover:shadow-md hover:-translate-y-0.5 transition">
+          <MessageCircle className="w-5 h-5 mb-2" />
+          <div className="font-bold text-sm">WhatsApp</div>
+          <div className="text-xs text-zinc-500">Review request reminders</div>
         </Link>
       </div>
     </div>
@@ -349,17 +436,19 @@ async function downloadQr(container: HTMLDivElement | null, fileName: string) {
 function ScoreCard({ icon: Icon, title, value, suffix, hint }: { icon: React.ElementType; title: string; value: number; suffix: string; hint: string }) {
   const pct = suffix === "%" ? value : Math.min(100, value);
   return (
-    <div className="bg-white border border-black/10 rounded-2xl p-5">
+    <div className="ticket-card p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wide text-zinc-500">{title}</span>
-        <Icon className="w-4 h-4 text-zinc-400" />
+        <span className="eyebrow text-zinc-500">{title}</span>
+        <span className="w-8 h-8 rounded-lg bg-[var(--ink)] text-white grid place-items-center shrink-0">
+          <Icon className="w-4 h-4" />
+        </span>
       </div>
-      <div className="mt-2 font-black text-3xl">
+      <div className="mt-3 font-mono-brand font-black text-4xl text-[var(--ink)] tracking-tight">
         {value}
         <span className="text-base font-bold text-zinc-400">{suffix}</span>
       </div>
-      <div className="mt-3 h-2 rounded-full bg-zinc-100 overflow-hidden">
-        <div className="h-full rounded-full bg-[#c9a227]" style={{ width: `${pct}%` }} />
+      <div className="mt-3 h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+        <div className="h-full rounded-full bg-[var(--brass)]" style={{ width: `${pct}%` }} />
       </div>
       <div className="mt-2 text-xs text-zinc-500">{hint}</div>
     </div>
@@ -368,12 +457,12 @@ function ScoreCard({ icon: Icon, title, value, suffix, hint }: { icon: React.Ele
 
 function Stat({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: number }) {
   return (
-    <div className="bg-white border border-black/10 rounded-xl p-4">
+    <div className="ticket-card p-4">
       <div className="flex items-center justify-between">
         <span className="text-xs text-zinc-500 font-semibold">{label}</span>
         <Icon className="w-4 h-4 text-zinc-400" />
       </div>
-      <div className="mt-2 font-black text-2xl">{value}</div>
+      <div className="mt-2 font-mono-brand font-black text-2xl text-[var(--ink)]">{value}</div>
     </div>
   );
 }

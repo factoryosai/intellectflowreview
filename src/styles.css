@@ -64,6 +64,7 @@
 :root {
   --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
   --radius: 0.875rem;
   --background: oklch(0.985 0.012 85);
   --foreground: oklch(0.15 0 0);
@@ -79,6 +80,12 @@
   --brand-violet: oklch(0.55 0.22 275);
   --brand-yellow: oklch(0.88 0.18 95);
   --brand-green: oklch(0.68 0.17 155);
+  /* Signature palette — "rating stamp" identity: ink charcoal + a single brass-gold accent on near-white paper. */
+  --ink: oklch(0.19 0.012 260);
+  --paper: oklch(0.99 0.004 90);
+  --brass: oklch(0.72 0.135 75);
+  --brass-deep: oklch(0.52 0.11 65);
+  --stamp-red: oklch(0.55 0.19 25);
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
@@ -143,6 +150,7 @@
 @theme inline {
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
 @layer base {
@@ -175,5 +183,49 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* ---- Signature visual language: printed ticket-stub, like the QR standee itself ---- */
+
+@utility font-mono-brand {
+  font-family: var(--font-mono);
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* A card shaped like a torn ticket stub — used for testimonials, pricing, tool cards. */
+@utility ticket-card {
+  position: relative;
+  border-radius: 22px;
+  border: 1px solid oklch(0.19 0.012 260 / 10%);
+  background: var(--paper);
+}
+
+/* Perforated tear-line divider inside a ticket-card, with punched circle notches on both ends. */
+@utility ticket-tear {
+  position: relative;
+  height: 0;
+  margin: 0 0.25rem;
+  border-top: 2px dashed oklch(0.19 0.012 260 / 18%);
+}
+@utility ticket-tear-hole {
+  position: absolute;
+  top: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--background);
+}
+
+/* Faint dot-grid, evoking dot-matrix receipt printing — used sparingly behind hero content. */
+@utility dot-grid {
+  background-image: radial-gradient(oklch(0.19 0.012 260 / 14%) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
 
